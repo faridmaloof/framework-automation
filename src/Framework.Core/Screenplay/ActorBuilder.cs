@@ -1,0 +1,45 @@
+using Framework.Core.ScreenPlay.Interfaces;
+
+namespace Framework.Core.ScreenPlay;
+
+/// <summary>
+/// Fluent builder for creating actors with abilities.
+/// Makes actor creation more readable and maintainable.
+/// </summary>
+public class ActorBuilder
+{
+    private readonly string _name;
+    private readonly List<IAbility> _abilities = new();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ActorBuilder"/> class.
+    /// </summary>
+    /// <param name="name">The actor's name (e.g., "John", "Admin", "Customer").</param>
+    public ActorBuilder(string name)
+    {
+        _name = name;
+    }
+
+    /// <summary>
+    /// Adds an ability to the actor.
+    /// </summary>
+    /// <typeparam name="TAbility">The type of ability.</typeparam>
+    /// <param name="ability">The ability instance.</param>
+    /// <returns>The builder for chaining.</returns>
+    public ActorBuilder WithAbility<TAbility>(TAbility ability) where TAbility : IAbility
+    {
+        _abilities.Add(ability);
+        return this;
+    }
+
+    /// <summary>
+    /// Builds the actor with all registered abilities.
+    /// </summary>
+    /// <returns>The configured actor.</returns>
+    public Actor Build()
+    {
+        var actor = new Actor(_name);
+        foreach (var ability in _abilities) actor.WhoCan(ability);
+        return actor;
+    }
+}
