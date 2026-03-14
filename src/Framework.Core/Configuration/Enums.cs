@@ -1,7 +1,63 @@
 namespace Framework.Core.Configuration;
 
 /// <summary>
-/// Screenshot capture mode.
+/// Browser type enumeration with full support for all major browsers.
+/// </summary>
+public enum BrowserType
+{
+    /// <summary>
+    /// Chromium browser (open-source base for Chrome, Edge, etc.).
+    /// </summary>
+    Chromium = 0,
+
+    /// <summary>
+    /// Google Chrome browser.
+    /// </summary>
+    Chrome = 1,
+
+    /// <summary>
+    /// Microsoft Edge browser (Chromium-based).
+    /// </summary>
+    Edge = 2,
+
+    /// <summary>
+    /// Mozilla Firefox browser.
+    /// </summary>
+    Firefox = 3,
+
+    /// <summary>
+    /// Apple Safari browser (WebKit).
+    /// </summary>
+    Safari = 4,
+
+    /// <summary>
+    /// Internet Explorer (legacy, via Edge IE mode).
+    /// </summary>
+    InternetExplorer = 5,
+
+    /// <summary>
+    /// WebKit browser (open-source base for Safari).
+    /// </summary>
+    WebKit = 6,
+
+    /// <summary>
+    /// Thorium browser (optimized Chromium fork).
+    /// </summary>
+    Thorium = 7,
+
+    /// <summary>
+    /// Brave browser (Chromium-based with privacy features).
+    /// </summary>
+    Brave = 8,
+
+    /// <summary>
+    /// Opera browser (Chromium-based).
+    /// </summary>
+    Opera = 9
+}
+
+/// <summary>
+/// Screenshot capture mode enumeration.
 /// </summary>
 public enum ScreenshotMode
 {
@@ -37,7 +93,7 @@ public enum ScreenshotMode
 }
 
 /// <summary>
-/// Video recording mode.
+/// Video recording mode enumeration.
 /// </summary>
 public enum VideoMode
 {
@@ -58,22 +114,27 @@ public enum VideoMode
 }
 
 /// <summary>
-/// Browser type.
+/// Observability mode for metrics and tracing.
 /// </summary>
-public enum BrowserType
+public enum ObservabilityMode
 {
     /// <summary>
-    /// Chromium browser.
+    /// Observability disabled.
     /// </summary>
-    Chromium = 0,
+    Disabled = 0,
 
     /// <summary>
-    /// Firefox browser.
+    /// Direct export to Prometheus/OpenTelemetry.
     /// </summary>
-    Firefox = 1,
+    Direct = 1,
 
     /// <summary>
-    /// WebKit browser.
+    /// Queue-based export (aggregated events).
     /// </summary>
-    WebKit = 2
+    Queue = 2,
+
+    /// <summary>
+    /// Console output (development mode).
+    /// </summary>
+    Console = 3
 }

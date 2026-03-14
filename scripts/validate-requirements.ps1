@@ -28,7 +28,7 @@ function Get-MarkdownFiles($Root) {
     return Get-ChildItem -LiteralPath $Root -Recurse -File -Filter '*.md'
 }
 
-function Strip-CodeFences {
+function Remove-CodeFences {
     param([Parameter(Mandatory)][string]$Text)
 
     $lines = $Text -split "`n"
@@ -93,8 +93,8 @@ if ($expectedEpicCount -lt 1) { Fail "No se encontraron épicas en $epicsRoot." 
 $expectedFeatureCount = 0
 foreach ($f in $epicFiles) {
     $text = Get-Content -LiteralPath $f.FullName -Raw
-    $matches = [regex]::Matches($text, 'FEAT-\d{3}-\d{3}') | ForEach-Object { $_.Value } | Sort-Object -Unique
-    $expectedFeatureCount += $matches.Count
+    $scriptMatches = [regex]::Matches($text, 'FEAT-\d{3}-\d{3}') | ForEach-Object { $_.Value } | Sort-Object -Unique
+    $expectedFeatureCount += $scriptMatches.Count
 }
 $expectedTaskCount = $expectedFeatureCount * 3
 $expectedSubtaskCount = $expectedTaskCount * 3
@@ -130,11 +130,11 @@ $linkRegex = [regex]'\[[^\]]+\]\(([^)]+)\)'
 
 foreach ($f in $mdFiles) {
     $raw = Get-Content -LiteralPath $f.FullName -Raw
-    $text = Strip-CodeFences -Text $raw
+    $text = Remove-CodeFences -Text $raw
 
     $baseDir = Split-Path -Parent $f.FullName
-    $matches = $linkRegex.Matches($text)
-    foreach ($m in $matches) {
+    $scriptMatches = $linkRegex.Matches($text)
+    foreach ($m in $scriptMatches) {
         $target = $m.Groups[1].Value
         $resolved = Resolve-LinkTarget -BaseDir $baseDir -Target $target
         if (-not $resolved) { continue }

@@ -13,7 +13,14 @@ namespace Framework.Core.Tools.Database;
 /// <param name="connectionString">The database connection string.</param>
 public abstract class DatabaseConnection(string connectionString) : IDisposable
 {
+    /// <summary>
+    /// Gets the connection string.
+    /// </summary>
     protected readonly string ConnectionString = connectionString;
+    
+    /// <summary>
+    /// Gets or sets the underlying database connection.
+    /// </summary>
     protected IDbConnection? _connection;
     private bool _disposed;
 

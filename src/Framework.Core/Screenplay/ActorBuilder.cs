@@ -6,19 +6,15 @@ namespace Framework.Core.ScreenPlay;
 /// Fluent builder for creating actors with abilities.
 /// Makes actor creation more readable and maintainable.
 /// </summary>
-public class ActorBuilder
+/// <remarks>
+/// Initializes a new instance of the <see cref="ActorBuilder"/> class.
+/// </remarks>
+/// <param name="name">The actor's name (e.g., "John", "Admin", "Customer").</param>
+public class ActorBuilder(string name)
 {
-    private readonly string _name;
-    private readonly List<IAbility> _abilities = new();
+    private readonly string _name = name;
+    private readonly List<IAbility> _abilities = [];
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ActorBuilder"/> class.
-    /// </summary>
-    /// <param name="name">The actor's name (e.g., "John", "Admin", "Customer").</param>
-    public ActorBuilder(string name)
-    {
-        _name = name;
-    }
 
     /// <summary>
     /// Adds an ability to the actor.

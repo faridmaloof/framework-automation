@@ -144,4 +144,9 @@ public class FrameworkSettings : IFrameworkSettings
     /// Gets or sets the parallelism settings.
     /// </summary>
     public ParallelismSettings Parallelism { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the observability settings.
+    /// </summary>
+    public ObservabilitySettings Observability { get; set; } = new();
 }
