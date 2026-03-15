@@ -1,18 +1,19 @@
-using FluentAssertions;
 using Framework.Core.BDD;
 using Framework.Core.ScreenPlay;
 using Framework.Core.ScreenPlay.Interfaces;
+using Framework.Core.ScreenPlay.Interactions;
+using Framework.Core.ScreenPlay.Questions;
+using Framework.Core.ScreenPlay.Tasks;
 using Microsoft.Playwright;
 using Reqnroll;
 using Scaffolding.Tests.POM.Google.Actions;
-using Scaffolding.Tests.ScreenPlay.Web.Questions;
-using Scaffolding.Tests.ScreenPlay.Web.Tasks;
 
 namespace Scaffolding.Tests.BDD.Steps;
 
 /// <summary>
 /// Step definitions for Google Search feature.
-/// Uses ScreenPlay Pattern with POM for page interactions.
+/// Steps ONLY call Tasks or Questions - ZERO validation logic in steps.
+/// All validation logic is encapsulated in VerificationQuestions.
 /// </summary>
 [Binding]
 public class GoogleSearchSteps
@@ -28,68 +29,58 @@ public class GoogleSearchSteps
         _scenarioContext = scenarioContext;
     }
 
+    /// <summary>
+    /// Gets the actor from the scenario context.
+    /// </summary>
     private IActor Actor => ScenarioActor.Get(_scenarioContext);
 
     /// <summary>
-    /// Step: Given the actor is on the Google home page.
+    /// Step: Given the user is on the Google home page.
+    /// Pure action - no validation.
     /// </summary>
     [Given("the user is on the Google home page")]
-    public async Task GivenTheActorIsOnTheGoogleHomePage()
+    public Task GivenTheActorIsOnTheGoogleHomePage()
     {
-        await Actor.AttemptsToAsync(new NavigateTo("https://www.google.com", "networkidle"));
+        return Actor.AttemptsToAsync(NavigateToUrl.To("https://www.google.com", "networkidle"));
     }
 
     /// <summary>
     /// Step: When they search for a query.
-    /// Uses POM Actions for maintainability.
+    /// Pure action - no validation.
     /// </summary>
     [When("they search for {string}")]
-    public async Task WhenTheySearchFor(string query)
+    public Task WhenTheySearchFor(string query)
     {
-        await Actor.AttemptsToAsync(GoogleHomePageActions.SearchFor(query));
-
-        // Wait for navigation
-        var ability = Actor.AbilityTo<BrowseTheWeb>();
-        await ability.Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        return Actor.AttemptsToAsync(GoogleHomePageActions.SearchFor(query));
     }
 
     /// <summary>
     /// Step: Then the search should execute without errors.
-    /// This step verifies the search was performed successfully.
+    /// VerificationQuestion encapsulates ALL validation logic.
     /// </summary>
     [Then("the search should execute without errors")]
-    public async Task ThenTheSearchShouldExecuteWithoutErrors()
+    public Task ThenTheSearchShouldExecuteWithoutErrors()
     {
-        // Wait for page to be stable after search
-        var ability = Actor.AbilityTo<BrowseTheWeb>();
-        await ability.Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-        
-        // Verify we're on a search results page (URL contains /search)
-        var url = await Actor.AsksForAsync(PageUrl.Value());
-        url.Should().Contain("/search");
+        return Actor.AsksForAsync(VerifyContainsText.Text("/search", "URL should contain '/search' after search"));
     }
 
     /// <summary>
     /// Step: Then I should see search results.
-    /// Uses ScreenPlay Questions for assertions.
-    /// The Question validates internally.
+    /// VerificationQuestion encapsulates ALL validation logic.
     /// </summary>
     [Then("I should see search results")]
-    public async Task ThenIShouldSeeSearchResults()
+    public Task ThenIShouldSeeSearchResults()
     {
-        var hasResults = await Actor.AsksForAsync(SearchResultsVisible.Value());
-        hasResults.Should().BeTrue();
+        return Actor.AsksForAsync(VerifyTrue.That(async () => await IsElementVisible.Element("[id='search']").AnsweredByAsync(Actor), "Search should return results"));
     }
 
     /// <summary>
-    /// Step: And the search results count should be greater than minimum.
-    /// Uses ScreenPlay Questions for assertions.
-    /// The Question validates internally.
+    /// Step: Then the search results count should be greater than minimum.
+    /// VerificationQuestion encapsulates ALL validation logic.
     /// </summary>
     [Then("the search results count should be greater than {int}")]
-    public async Task ThenSearchResultsCountShouldBeGreaterThan(int minValue)
+    public Task ThenSearchResultsCountShouldBeGreaterThan(int minValue)
     {
-        var count = await Actor.AsksForAsync(SearchResultsCount.Value());
-        count.Should().BeGreaterThan(minValue);
+        return Actor.AsksForAsync(VerifyGreaterThan.Value(async () => await GetElementCount.Of("[id='search']").AnsweredByAsync(Actor), minValue, $"Search results count should be greater than {minValue}"));
     }
 }
