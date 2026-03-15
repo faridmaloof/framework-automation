@@ -12,5 +12,5 @@ public abstract class Interaction : IInteraction
     public abstract string Description { get; }
     
     /// <inheritdoc/>
-    public abstract System.Threading.Tasks.Task PerformAsAsync(IActor actor);
+    public abstract Task PerformAsAsync(IActor actor);
 }

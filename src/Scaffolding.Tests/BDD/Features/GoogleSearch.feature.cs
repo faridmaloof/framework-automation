@@ -134,19 +134,19 @@ namespace Scaffolding.Tests.BDD.Features
             await this.TestTearDownAsync();
         }
         
-        [global::Xunit.SkippableFactAttribute(DisplayName="Successful search validates the page title")]
+        [global::Xunit.SkippableFactAttribute(DisplayName="Search executes successfully")]
         [global::Xunit.TraitAttribute("FeatureTitle", "Google Search")]
-        [global::Xunit.TraitAttribute("Description", "Successful search validates the page title")]
+        [global::Xunit.TraitAttribute("Description", "Search executes successfully")]
         [global::Xunit.TraitAttribute("Category", "smoke")]
         [global::Xunit.TraitAttribute("Category", "web")]
-        public async global::System.Threading.Tasks.Task SuccessfulSearchValidatesThePageTitle()
+        public async global::System.Threading.Tasks.Task SearchExecutesSuccessfully()
         {
             string[] tagsOfScenario = new string[] {
                     "smoke",
                     "web"};
             global::System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new global::System.Collections.Specialized.OrderedDictionary();
             string pickleIndex = "0";
-            global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Successful search validates the page title", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
+            global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Search executes successfully", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
 #line 7
@@ -160,16 +160,13 @@ namespace Scaffolding.Tests.BDD.Features
             {
                 await this.ScenarioStartAsync();
 #line 8
-    await testRunner.GivenAsync("the actor is on the Google home page", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
+    await testRunner.GivenAsync("the user is on the Google home page", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 9
-    await testRunner.WhenAsync("they search for \"Automatización .NET\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+    await testRunner.WhenAsync("they search for \"Playwright .NET\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 10
-    await testRunner.ThenAsync("the page title should contain \"Automatización\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
-#line hidden
-#line 11
-    await testRunner.AndAsync("I should see search results", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+    await testRunner.ThenAsync("the search should execute without errors", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();

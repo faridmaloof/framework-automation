@@ -9,9 +9,9 @@ public interface IAction
     /// Gets the description of what this action does (for reporting).
     /// </summary>
     string Description { get; }
-    
+
     /// <summary>
     /// Performs this action as the specified actor.
     /// </summary>
-    System.Threading.Tasks.Task PerformAsAsync(IActor actor);
+    Task PerformAsAsync(IActor actor);
 }

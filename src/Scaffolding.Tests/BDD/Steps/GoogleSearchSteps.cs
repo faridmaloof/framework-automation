@@ -1,10 +1,11 @@
 using FluentAssertions;
-using Framework.Core.ScreenPlay.Interfaces;
 using Framework.Core.ScreenPlay;
+using Framework.Core.ScreenPlay.Interfaces;
+using Microsoft.Playwright;
 using Reqnroll;
 using Scaffolding.Tests.POM.Google.Actions;
-using Scaffolding.Tests.ScreenPlay.Web.Tasks;
 using Scaffolding.Tests.ScreenPlay.Web.Questions;
+using Scaffolding.Tests.ScreenPlay.Web.Tasks;
 
 namespace Scaffolding.Tests.BDD.Steps;
 
@@ -15,21 +16,41 @@ namespace Scaffolding.Tests.BDD.Steps;
 [Binding]
 public class GoogleSearchSteps
 {
-    private readonly IActor _actor;
+    private ScenarioContext _scenarioContext;
+    private IActor? _actor;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GoogleSearchSteps"/> class.
     /// </summary>
-    /// <param name="actor">The actor injected by Reqnroll.</param>
-    public GoogleSearchSteps(IActor actor) => _actor = actor;
+    /// <param name="scenarioContext">The scenario context.</param>
+    public GoogleSearchSteps(ScenarioContext scenarioContext)
+    {
+        _scenarioContext = scenarioContext;
+    }
+
+    private IActor Actor
+    {
+        get
+        {
+            if (_actor == null)
+            {
+                if (!_scenarioContext.TryGetValue("Actor", out var actorFromContext))
+                {
+                    throw new InvalidOperationException("Actor not initialized. BeforeScenario hook must run first.");
+                }
+                _actor = (IActor)actorFromContext;
+            }
+            return _actor;
+        }
+    }
 
     /// <summary>
     /// Step: Given the actor is on the Google home page.
     /// </summary>
-    [Given("the actor is on the Google home page")]
-    public async System.Threading.Tasks.Task GivenTheActorIsOnTheGoogleHomePage()
+    [Given("the user is on the Google home page")]
+    public async Task GivenTheActorIsOnTheGoogleHomePage()
     {
-        await _actor.AttemptsToAsync(new NavigateTo("https://www.google.com", "networkidle"));
+        await Actor.AttemptsToAsync(new NavigateTo("https://www.google.com", "networkidle"));
     }
 
     /// <summary>
@@ -37,34 +58,50 @@ public class GoogleSearchSteps
     /// Uses POM Actions for maintainability.
     /// </summary>
     [When("they search for {string}")]
-    public async System.Threading.Tasks.Task WhenTheySearchFor(string query)
+    public async Task WhenTheySearchFor(string query)
     {
-        await _actor.AttemptsToAsync(GoogleHomePageActions.SearchFor(query));
-        
+        await Actor.AttemptsToAsync(GoogleHomePageActions.SearchFor(query));
+
         // Wait for navigation
-        var ability = _actor.AbilityTo<BrowseTheWeb>();
-        await ability.Page.WaitForLoadStateAsync(Microsoft.Playwright.LoadState.NetworkIdle);
+        var ability = Actor.AbilityTo<BrowseTheWeb>();
+        await ability.Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 
     /// <summary>
-    /// Step: Then the page title should contain expected text.
+    /// Step: Then the search should execute without errors.
+    /// This step verifies the search was performed successfully.
+    /// </summary>
+    [Then("the search should execute without errors")]
+    public async Task ThenTheSearchShouldExecuteWithoutErrors()
+    {
+        // Wait for page to be stable after search
+        var ability = Actor.AbilityTo<BrowseTheWeb>();
+        await ability.Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        
+        // Verify we're on a search results page (URL contains /search)
+        var url = await Actor.AsksForAsync(new PageUrl());
+        url.Should().Contain("/search", "Should be on search results page");
+    }
+
+    /// <summary>
+    /// Step: Then I should see search results.
     /// Uses ScreenPlay Questions for assertions.
     /// </summary>
-    [Then("the page title should contain {string}")]
-    public async System.Threading.Tasks.Task ThenThePageTitleShouldContain(string expectedText)
+    [Then("I should see search results")]
+    public async Task ThenIShouldSeeSearchResults()
     {
-        var title = await _actor.AsksForAsync(PageTitle.Value());
-        title.Should().Contain(expectedText);
+        var hasResults = await Actor.AsksForAsync(SearchResultsVisible.Value());
+        hasResults.Should().BeTrue("Should have search results");
     }
 
     /// <summary>
-    /// Step: And I should see search results.
-    /// Uses POM Actions and ScreenPlay Questions.
+    /// Step: And the search results count should be greater than minimum.
+    /// Uses ScreenPlay Questions for assertions.
     /// </summary>
-    [Then("I should see search results")]
-    public async System.Threading.Tasks.Task ThenIShouldSeeSearchResults()
+    [Then("the search results count should be greater than {int}")]
+    public async Task ThenSearchResultsCountShouldBeGreaterThan(int minValue)
     {
-        var count = await _actor.AsksForAsync(GoogleSearchResultsActions.GetResultCount());
-        count.Should().BeGreaterThan(0);
+        var count = await Actor.AsksForAsync(SearchResultsCount.Value());
+        count.Should().BeGreaterThan(minValue, $"Should have more than {minValue} results");
     }
 }

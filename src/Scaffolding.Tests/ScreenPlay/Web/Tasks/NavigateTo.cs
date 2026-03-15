@@ -28,7 +28,7 @@ public class NavigateTo : Framework.Core.Screenplay.Task
     public override string TaskName => $"Navigate to {_url}";
 
     /// <inheritdoc/>
-    public override async System.Threading.Tasks.Task PerformAsAsync(IActor actor)
+    public override async Task PerformAsAsync(IActor actor)
     {
         var ability = actor.AbilityTo<BrowseTheWeb>();
         var waitUntil = _waitFor?.ToLowerInvariant() switch

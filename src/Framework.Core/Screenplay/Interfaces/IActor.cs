@@ -29,16 +29,16 @@ public interface IActor
     /// Checks if the actor has a specific ability.
     /// </summary>
     bool Can<TAbility>() where TAbility : IAbility;
-    
+
     /// <summary>
     /// Attempts to perform one or more tasks or interactions.
     /// </summary>
-    System.Threading.Tasks.Task AttemptsToAsync(params IAction[] actions);
-    
+    Task AttemptsToAsync(params IAction[] actions);
+
     /// <summary>
     /// Asks a question to get information about the system state.
     /// </summary>
-    System.Threading.Tasks.Task<TResult> AsksForAsync<TResult>(IQuestion<TResult> question);
+    Task<TResult> AsksForAsync<TResult>(IQuestion<TResult> question);
     
     /// <summary>
     /// Stores a value in the actor's memory.

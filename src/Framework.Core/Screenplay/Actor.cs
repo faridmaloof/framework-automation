@@ -54,12 +54,12 @@ public class Actor(string name) : IActor, IDisposable
     }
 
     /// <inheritdoc/>
-    public System.Threading.Tasks.Task AttemptsToAsync(params IAction[] actions)
+    public Task AttemptsToAsync(params IAction[] actions)
     {
         ThrowIfDisposed();
         if (actions == null || actions.Length == 0) return System.Threading.Tasks.Task.CompletedTask;
         
-        async System.Threading.Tasks.Task RunActionsAsync()
+        async Task RunActionsAsync()
         {
             foreach (var action in actions) await action.PerformAsAsync(this);
         }
@@ -68,7 +68,7 @@ public class Actor(string name) : IActor, IDisposable
     }
 
     /// <inheritdoc/>
-    public async System.Threading.Tasks.Task<TResult> AsksForAsync<TResult>(IQuestion<TResult> question)
+    public async Task<TResult> AsksForAsync<TResult>(IQuestion<TResult> question)
     {
         ThrowIfDisposed();
         if (question == null) throw new ArgumentNullException(nameof(question));

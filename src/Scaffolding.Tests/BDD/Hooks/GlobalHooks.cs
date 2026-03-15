@@ -9,29 +9,25 @@ namespace Scaffolding.Tests.BDD.Hooks;
 /// Global hooks for test lifecycle management.
 /// Handles browser, context, page, and actor setup/teardown.
 /// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="GlobalHooks"/> class.
+/// </remarks>
+/// <param name="scenarioContext">The scenario context.</param>
 [Binding]
-public class GlobalHooks
+public class GlobalHooks(ScenarioContext scenarioContext)
 {
-    private readonly ScenarioContext _scenarioContext;
+    private readonly ScenarioContext _scenarioContext = scenarioContext;
     private IPlaywright? _playwright;
     private IBrowser? _browser;
     private IBrowserContext? _context;
     private IPage? _page;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GlobalHooks"/> class.
-    /// </summary>
-    /// <param name="scenarioContext">The scenario context.</param>
-    public GlobalHooks(ScenarioContext scenarioContext)
-    {
-        _scenarioContext = scenarioContext;
-    }
 
     /// <summary>
     /// Runs before the entire test run.
     /// </summary>
     [BeforeTestRun]
-    public static async System.Threading.Tasks.Task BeforeTestRunAsync()
+    public static async Task BeforeTestRunAsync()
     {
         Console.WriteLine("=== Test Run Started ===");
         await System.Threading.Tasks.Task.CompletedTask;
@@ -41,20 +37,20 @@ public class GlobalHooks
     /// Runs after the entire test run.
     /// </summary>
     [AfterTestRun]
-    public static async System.Threading.Tasks.Task AfterTestRunAsync()
+    public static async Task AfterTestRunAsync()
     {
         Console.WriteLine("=== Test Run Finished ===");
         await System.Threading.Tasks.Task.CompletedTask;
     }
 
     /// <summary>
-    /// Runs before each web scenario.
+    /// Runs before each scenario.
     /// Sets up Playwright browser, context, page, and actor.
     /// </summary>
-    [BeforeScenario("web")]
-    public async System.Threading.Tasks.Task BeforeWebScenario()
+    [BeforeScenario]
+    public async Task BeforeScenario()
     {
-        Console.WriteLine($"[SCENARIO] Starting: {_scenarioContext.ScenarioInfo.Title}");
+        Console.WriteLine($"[HOOK] BeforeScenario INICIANDO: {_scenarioContext.ScenarioInfo.Title}");
         _scenarioContext["ScenarioStartTime"] = DateTimeOffset.UtcNow;
 
         // Create Playwright browser
@@ -70,15 +66,23 @@ public class GlobalHooks
         });
         _page = await _context.NewPageAsync();
 
-        // Create actor with BrowseTheWeb ability using ActorBuilder
-        var actor = new ActorBuilder("Test User")
-            .WithAbility(new BrowseTheWeb(_page))
-            .Build();
+        // Create actor with BrowseTheWeb ability - DIRECT REGISTER
+        var actor = new Actor("Test User");
+        var browseTheWeb = new BrowseTheWeb(_page);
+        
+        // Register ability directly
+        actor.WhoCan(browseTheWeb);
+        
+        Console.WriteLine($"[HOOK] BrowseTheWeb creado: {browseTheWeb.DisplayName}");
+        Console.WriteLine($"[HOOK] Actor creado: {actor.Name}, Abilities: {actor.Can<BrowseTheWeb>()}");
 
         // Register in Reqnroll container for dependency injection
-        _scenarioContext.ScenarioContainer.RegisterInstanceAs<IActor>(actor);
+        _scenarioContext.ScenarioContainer.RegisterInstanceAs<Framework.Core.ScreenPlay.Interfaces.IActor>(actor);
         _scenarioContext["Actor"] = actor;
         _scenarioContext["Page"] = _page;
+        _scenarioContext["BrowseTheWeb"] = browseTheWeb;
+        
+        Console.WriteLine($"[HOOK] Actor registrado en contexto");
     }
 
     /// <summary>
@@ -86,7 +90,7 @@ public class GlobalHooks
     /// Cleans up browser resources and reports test status.
     /// </summary>
     [AfterScenario]
-    public async System.Threading.Tasks.Task AfterScenario()
+    public async Task AfterScenario()
     {
         var startTime = _scenarioContext.TryGetValue("ScenarioStartTime", out var st)
             ? (DateTimeOffset)st : DateTimeOffset.UtcNow;
@@ -103,6 +107,12 @@ public class GlobalHooks
         if (_scenarioContext.TryGetValue("Actor", out var actorObj) && actorObj is IActor actor)
         {
             (actor as IDisposable)?.Dispose();
+        }
+        
+        // Dispose BrowseTheWeb ability
+        if (_scenarioContext.TryGetValue("BrowseTheWeb", out var browseTheWebObj) && browseTheWebObj is BrowseTheWeb browseTheWeb)
+        {
+            await browseTheWeb.DisposeAsync();
         }
     }
 

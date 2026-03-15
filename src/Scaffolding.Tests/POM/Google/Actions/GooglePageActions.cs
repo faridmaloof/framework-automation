@@ -1,4 +1,6 @@
+using Framework.Core.ScreenPlay;
 using Framework.Core.ScreenPlay.Interfaces;
+using Microsoft.Playwright;
 using Scaffolding.Tests.POM.Google.Locators;
 using Scaffolding.Tests.ScreenPlay.Web.Interactions;
 using Scaffolding.Tests.ScreenPlay.Web.Questions;
@@ -25,10 +27,10 @@ public static class GoogleHomePageActions
     /// </summary>
     /// <returns>A ScreenPlay interaction to click.</returns>
     public static Click ClickSearchButton() =>
-        Click.On(GoogleHomePageLocators.SearchButton);
+        Click.On("input[value='Buscar con Google']");
     
     /// <summary>
-    /// Performs a complete search action (enter term + click search).
+    /// Performs a complete search action (enter term + press Enter).
     /// </summary>
     /// <param name="query">The search query.</param>
     /// <returns>An array of ScreenPlay interactions.</returns>
@@ -36,8 +38,30 @@ public static class GoogleHomePageActions
         new IAction[]
         {
             EnterSearchTerm(query),
-            ClickSearchButton()
+            SubmitSearch()
         };
+    
+    /// <summary>
+    /// Submits the search by pressing Enter key.
+    /// </summary>
+    /// <returns>A ScreenPlay task to submit search.</returns>
+    public static SubmitSearch SubmitSearch() => new();
+}
+
+/// <summary>
+/// Task to submit search by pressing Enter.
+/// </summary>
+public class SubmitSearch : ITask
+{
+    public string TaskName => "Submit search";
+    public string Description => "Submit search by pressing Enter";
+
+    public async System.Threading.Tasks.Task PerformAsAsync(IActor actor)
+    {
+        var ability = actor.AbilityTo<BrowseTheWeb>();
+        await ability.Page.Locator(GoogleHomePageLocators.SearchInput).PressAsync("Enter");
+        await ability.Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    }
 }
 
 /// <summary>

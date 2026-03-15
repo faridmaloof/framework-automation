@@ -9,9 +9,9 @@ public interface IQuestion<TResult>
     /// Gets the description of this question (for reporting).
     /// </summary>
     string Description { get; }
-    
+
     /// <summary>
     /// Answers this question using the specified actor.
     /// </summary>
-    System.Threading.Tasks.Task<TResult> AnsweredByAsync(IActor actor);
+    Task<TResult> AnsweredByAsync(IActor actor);
 }

@@ -18,6 +18,7 @@ public class Click : Framework.Core.ScreenPlay.Classes.Interaction
     /// <param name="selector">The element selector.</param>
     private Click(string selector) => _selector = selector;
 
+
     /// <inheritdoc/>
     public override string Description => $"Click on '{_selector}'";
 
@@ -29,7 +30,7 @@ public class Click : Framework.Core.ScreenPlay.Classes.Interaction
     public static Click On(string selector) => new(selector);
 
     /// <inheritdoc/>
-    public override async System.Threading.Tasks.Task PerformAsAsync(IActor actor)
+    public override async Task PerformAsAsync(IActor actor)
     {
         var ability = actor.AbilityTo<BrowseTheWeb>();
         await ability.Page.Locator(_selector).ClickAsync();
@@ -73,7 +74,7 @@ public class Enter : Framework.Core.ScreenPlay.Classes.Interaction
     }
 
     /// <inheritdoc/>
-    public override async System.Threading.Tasks.Task PerformAsAsync(IActor actor)
+    public override async Task PerformAsAsync(IActor actor)
     {
         var ability = actor.AbilityTo<BrowseTheWeb>();
         await ability.Page.Locator(_selector).FillAsync(_text);
