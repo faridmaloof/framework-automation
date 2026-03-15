@@ -44,7 +44,6 @@ public class JsonPlaceholderApiSteps
     [Given("the API is available")]
     public Task GivenTheApiIsAvailable()
     {
-        // API availability is verified by making a request
         return Task.CompletedTask;
     }
 
@@ -77,64 +76,76 @@ public class JsonPlaceholderApiSteps
 
     /// <summary>
     /// Step: Then I should receive a list of posts.
+    /// Uses ScreenPlay Questions for assertions.
     /// </summary>
     [Then("I should receive a list of posts")]
     public async Task ThenIShouldReceiveAListOfPosts()
     {
-        var responseBody = await Actor.AsksForAsync(ResponseBody.Value());
-        responseBody.Should().NotBeNullOrEmpty();
-        responseBody.Should().StartWith("[");
+        var isValidJson = await Actor.AsksForAsync(ResponseBodyIsValidJson.Value());
+        isValidJson.Should().BeTrue();
+        
+        var isArray = await Actor.AsksForAsync(ResponseBodyIsArray.Value());
+        isArray.Should().BeTrue();
     }
 
     /// <summary>
     /// Step: Then I should receive the post details.
+    /// Uses ScreenPlay Questions for assertions.
     /// </summary>
     [Then("I should receive the post details")]
     public async Task ThenIShouldReceiveThePostDetails()
     {
-        var responseBody = await Actor.AsksForAsync(ResponseBody.Value());
-        responseBody.Should().NotBeNullOrEmpty();
-        responseBody.Should().StartWith("{");
+        var isValidJson = await Actor.AsksForAsync(ResponseBodyIsValidJson.Value());
+        isValidJson.Should().BeTrue();
+        
+        var isObject = await Actor.AsksForAsync(ResponseBodyIsObject.Value());
+        isObject.Should().BeTrue();
     }
 
     /// <summary>
     /// Step: And the first post should have an ID.
+    /// Uses ScreenPlay Questions for assertions.
     /// </summary>
     [Then("the first post should have an ID")]
     public async Task ThenTheFirstPostShouldHaveAnId()
     {
-        var responseBody = await Actor.AsksForAsync(ResponseBody.Value());
-        responseBody.Should().Contain("\"id\"");
+        var hasIdField = await Actor.AsksForAsync(ResponseBodyContainsField.Value("id"));
+        hasIdField.Should().BeTrue();
     }
 
     /// <summary>
     /// Step: And the post title should not be empty.
+    /// Uses ScreenPlay Questions for assertions.
     /// </summary>
     [Then("the post title should not be empty")]
     public async Task ThenThePostTitleShouldNotBeEmpty()
     {
-        var responseBody = await Actor.AsksForAsync(ResponseBody.Value());
-        responseBody.Should().Contain("\"title\"");
+        var hasTitleField = await Actor.AsksForAsync(ResponseBodyContainsField.Value("title"));
+        hasTitleField.Should().BeTrue();
     }
 
     /// <summary>
     /// Step: Then I should receive a list of users.
+    /// Uses ScreenPlay Questions for assertions.
     /// </summary>
     [Then("I should receive a list of users")]
     public async Task ThenIShouldReceiveAListOfUsers()
     {
-        var responseBody = await Actor.AsksForAsync(ResponseBody.Value());
-        responseBody.Should().NotBeNullOrEmpty();
-        responseBody.Should().StartWith("[");
+        var isValidJson = await Actor.AsksForAsync(ResponseBodyIsValidJson.Value());
+        isValidJson.Should().BeTrue();
+        
+        var isArray = await Actor.AsksForAsync(ResponseBodyIsArray.Value());
+        isArray.Should().BeTrue();
     }
 
     /// <summary>
     /// Step: And the first user should have an email.
+    /// Uses ScreenPlay Questions for assertions.
     /// </summary>
     [Then("the first user should have an email")]
     public async Task ThenTheFirstUserShouldHaveAnEmail()
     {
-        var responseBody = await Actor.AsksForAsync(ResponseBody.Value());
-        responseBody.Should().Contain("\"email\"");
+        var hasEmailField = await Actor.AsksForAsync(ResponseBodyContainsField.Value("email"));
+        hasEmailField.Should().BeTrue();
     }
 }

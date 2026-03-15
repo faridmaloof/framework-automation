@@ -66,12 +66,13 @@ public class GoogleSearchSteps
         
         // Verify we're on a search results page (URL contains /search)
         var url = await Actor.AsksForAsync(PageUrl.Value());
-        url.Should().Contain("/search", "Should be on search results page");
+        url.Should().Contain("/search");
     }
 
     /// <summary>
     /// Step: Then I should see search results.
     /// Uses ScreenPlay Questions for assertions.
+    /// The Question validates internally.
     /// </summary>
     [Then("I should see search results")]
     public async Task ThenIShouldSeeSearchResults()
@@ -83,6 +84,7 @@ public class GoogleSearchSteps
     /// <summary>
     /// Step: And the search results count should be greater than minimum.
     /// Uses ScreenPlay Questions for assertions.
+    /// The Question validates internally.
     /// </summary>
     [Then("the search results count should be greater than {int}")]
     public async Task ThenSearchResultsCountShouldBeGreaterThan(int minValue)

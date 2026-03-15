@@ -5,7 +5,7 @@ namespace Scaffolding.Tests.ScreenPlay.Web.Questions;
 
 /// <summary>
 /// Verifies that search results are visible on the page.
-/// This Question asserts that results exist.
+/// This Question asserts that results exist and returns true/false.
 /// </summary>
 public class SearchResultsVisible : IQuestion<bool>
 {
