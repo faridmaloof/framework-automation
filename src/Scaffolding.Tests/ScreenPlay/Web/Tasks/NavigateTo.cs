@@ -8,21 +8,16 @@ namespace Scaffolding.Tests.ScreenPlay.Web.Tasks;
 /// Navigate to a URL.
 /// This is a ScreenPlay Task that represents a business-level action.
 /// </summary>
-public class NavigateTo : Framework.Core.Screenplay.Task
+/// <remarks>
+/// Initializes a new instance of the <see cref="NavigateTo"/> class.
+/// </remarks>
+/// <param name="url">The URL to navigate to.</param>
+/// <param name="waitFor">Optional wait condition (e.g., "networkidle").</param>
+public class NavigateTo(string url, string? waitFor = null) : Framework.Core.Screenplay.Task
 {
-    private readonly string _url;
-    private readonly string? _waitFor;
+    private readonly string _url = url;
+    private readonly string? _waitFor = waitFor;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="NavigateTo"/> class.
-    /// </summary>
-    /// <param name="url">The URL to navigate to.</param>
-    /// <param name="waitFor">Optional wait condition (e.g., "networkidle").</param>
-    public NavigateTo(string url, string? waitFor = null)
-    {
-        _url = url;
-        _waitFor = waitFor;
-    }
 
     /// <inheritdoc/>
     public override string TaskName => $"Navigate to {_url}";

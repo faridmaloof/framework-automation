@@ -36,4 +36,9 @@
     </None>
   </ItemGroup>
 
+  <!-- Test Results in src/TestResults -->
+  <PropertyGroup>
+    <TestResultsDirectory>$(MSBuildThisFileDirectory)..\TestResults</TestResultsDirectory>
+  </PropertyGroup>
+
 </Project>

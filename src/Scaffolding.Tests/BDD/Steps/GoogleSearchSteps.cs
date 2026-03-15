@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Framework.Core.BDD;
 using Framework.Core.ScreenPlay;
 using Framework.Core.ScreenPlay.Interfaces;
 using Microsoft.Playwright;
@@ -16,8 +17,7 @@ namespace Scaffolding.Tests.BDD.Steps;
 [Binding]
 public class GoogleSearchSteps
 {
-    private ScenarioContext _scenarioContext;
-    private IActor? _actor;
+    private readonly ScenarioContext _scenarioContext;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GoogleSearchSteps"/> class.
@@ -28,21 +28,7 @@ public class GoogleSearchSteps
         _scenarioContext = scenarioContext;
     }
 
-    private IActor Actor
-    {
-        get
-        {
-            if (_actor == null)
-            {
-                if (!_scenarioContext.TryGetValue("Actor", out var actorFromContext))
-                {
-                    throw new InvalidOperationException("Actor not initialized. BeforeScenario hook must run first.");
-                }
-                _actor = (IActor)actorFromContext;
-            }
-            return _actor;
-        }
-    }
+    private IActor Actor => ScenarioActor.Get(_scenarioContext);
 
     /// <summary>
     /// Step: Given the actor is on the Google home page.
@@ -79,7 +65,7 @@ public class GoogleSearchSteps
         await ability.Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         
         // Verify we're on a search results page (URL contains /search)
-        var url = await Actor.AsksForAsync(new PageUrl());
+        var url = await Actor.AsksForAsync(PageUrl.Value());
         url.Should().Contain("/search", "Should be on search results page");
     }
 
@@ -91,7 +77,7 @@ public class GoogleSearchSteps
     public async Task ThenIShouldSeeSearchResults()
     {
         var hasResults = await Actor.AsksForAsync(SearchResultsVisible.Value());
-        hasResults.Should().BeTrue("Should have search results");
+        hasResults.Should().BeTrue();
     }
 
     /// <summary>
@@ -102,6 +88,6 @@ public class GoogleSearchSteps
     public async Task ThenSearchResultsCountShouldBeGreaterThan(int minValue)
     {
         var count = await Actor.AsksForAsync(SearchResultsCount.Value());
-        count.Should().BeGreaterThan(minValue, $"Should have more than {minValue} results");
+        count.Should().BeGreaterThan(minValue);
     }
 }

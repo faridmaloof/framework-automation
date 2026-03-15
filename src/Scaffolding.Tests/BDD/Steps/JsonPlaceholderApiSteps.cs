@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Framework.Core.BDD;
 using Framework.Core.ScreenPlay;
 using Framework.Core.ScreenPlay.Interfaces;
 using Reqnroll;
@@ -14,8 +15,7 @@ namespace Scaffolding.Tests.BDD.Steps;
 [Binding]
 public class JsonPlaceholderApiSteps
 {
-    private ScenarioContext _scenarioContext;
-    private IActor? _actor;
+    private readonly ScenarioContext _scenarioContext;
     private const string ApiBaseUrl = "https://jsonplaceholder.typicode.com";
 
     /// <summary>
@@ -27,38 +27,25 @@ public class JsonPlaceholderApiSteps
         _scenarioContext = scenarioContext;
     }
 
-    private IActor Actor
-    {
-        get
+    private IActor Actor => ScenarioActor.GetOrCreate(
+        _scenarioContext, 
+        "ApiActor", 
+        () =>
         {
-            if (_actor == null)
-            {
-                if (!_scenarioContext.TryGetValue("ApiActor", out var actorFromContext))
-                {
-                    // Create API actor with CallAnApi ability
-                    var apiAbility = new CallAnApi(ApiBaseUrl);
-                    _actor = new Actor("API Client");
-                    _actor.WhoCan(apiAbility);
-                    _scenarioContext["ApiActor"] = _actor;
-                }
-                else
-                {
-                    _actor = (IActor)actorFromContext;
-                }
-            }
-            return _actor;
-        }
-    }
+            var apiAbility = new CallAnApi(ApiBaseUrl);
+            var actor = new Actor("API Client");
+            actor.WhoCan(apiAbility);
+            return actor;
+        });
 
     /// <summary>
     /// Step: Given the API is available.
     /// </summary>
     [Given("the API is available")]
-    public async Task GivenTheApiIsAvailable()
+    public Task GivenTheApiIsAvailable()
     {
         // API availability is verified by making a request
-        // If it fails, the test will fail here
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -95,10 +82,8 @@ public class JsonPlaceholderApiSteps
     public async Task ThenIShouldReceiveAListOfPosts()
     {
         var responseBody = await Actor.AsksForAsync(ResponseBody.Value());
-        responseBody.Should().NotBeNullOrEmpty("Response should contain posts");
-        
-        // Verify it's a JSON array
-        responseBody.Should().StartWith("[", "Posts should be returned as an array");
+        responseBody.Should().NotBeNullOrEmpty();
+        responseBody.Should().StartWith("[");
     }
 
     /// <summary>
@@ -108,10 +93,8 @@ public class JsonPlaceholderApiSteps
     public async Task ThenIShouldReceiveThePostDetails()
     {
         var responseBody = await Actor.AsksForAsync(ResponseBody.Value());
-        responseBody.Should().NotBeNullOrEmpty("Response should contain post details");
-        
-        // Verify it's a JSON object
-        responseBody.Should().StartWith("{", "Post should be returned as an object");
+        responseBody.Should().NotBeNullOrEmpty();
+        responseBody.Should().StartWith("{");
     }
 
     /// <summary>
@@ -121,9 +104,7 @@ public class JsonPlaceholderApiSteps
     public async Task ThenTheFirstPostShouldHaveAnId()
     {
         var responseBody = await Actor.AsksForAsync(ResponseBody.Value());
-        
-        // Simple check - response should contain "id"
-        responseBody.Should().Contain("\"id\"", "Post should have an ID field");
+        responseBody.Should().Contain("\"id\"");
     }
 
     /// <summary>
@@ -133,9 +114,7 @@ public class JsonPlaceholderApiSteps
     public async Task ThenThePostTitleShouldNotBeEmpty()
     {
         var responseBody = await Actor.AsksForAsync(ResponseBody.Value());
-        
-        // Simple check - response should contain "title"
-        responseBody.Should().Contain("\"title\"", "Post should have a title field");
+        responseBody.Should().Contain("\"title\"");
     }
 
     /// <summary>
@@ -145,10 +124,8 @@ public class JsonPlaceholderApiSteps
     public async Task ThenIShouldReceiveAListOfUsers()
     {
         var responseBody = await Actor.AsksForAsync(ResponseBody.Value());
-        responseBody.Should().NotBeNullOrEmpty("Response should contain users");
-        
-        // Verify it's a JSON array
-        responseBody.Should().StartWith("[", "Users should be returned as an array");
+        responseBody.Should().NotBeNullOrEmpty();
+        responseBody.Should().StartWith("[");
     }
 
     /// <summary>
@@ -158,8 +135,6 @@ public class JsonPlaceholderApiSteps
     public async Task ThenTheFirstUserShouldHaveAnEmail()
     {
         var responseBody = await Actor.AsksForAsync(ResponseBody.Value());
-        
-        // Simple check - response should contain "email"
-        responseBody.Should().Contain("\"email\"", "User should have an email field");
+        responseBody.Should().Contain("\"email\"");
     }
 }

@@ -37,18 +37,14 @@ public class CallAnApi : IAbility
 /// <summary>
 /// Sends a GET request to the specified endpoint.
 /// </summary>
-public class GetRequest : ITask
+/// <remarks>
+/// Initializes a new instance of the <see cref="GetRequest"/> class.
+/// </remarks>
+/// <param name="endpoint">The API endpoint.</param>
+public class GetRequest(string endpoint) : ITask
 {
-    private readonly string _endpoint;
+    private readonly string _endpoint = endpoint;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GetRequest"/> class.
-    /// </summary>
-    /// <param name="endpoint">The API endpoint.</param>
-    public GetRequest(string endpoint)
-    {
-        _endpoint = endpoint;
-    }
 
     /// <inheritdoc/>
     public string TaskName => $"GET {_endpoint}";

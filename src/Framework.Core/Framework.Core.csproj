@@ -48,6 +48,9 @@
     <!-- OpenTelemetry -->
     <PackageReference Include="OpenTelemetry" Version="1.15.0" />
     
+    <!-- Reqnroll for BDD helpers -->
+    <PackageReference Include="Reqnroll" Version="3.3.3" />
+    
     <!-- Bogus -->
     <PackageReference Include="Bogus" Version="35.6.5" />
     
