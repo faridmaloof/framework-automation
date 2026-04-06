@@ -30,8 +30,7 @@ public class JsonPlaceholderApiSteps
     private IActor Actor => ScenarioActor.GetOrCreate(
         _scenarioContext, 
         "ApiActor", 
-        () =>
-        {
+        () => {
             var apiAbility = new CallAnApi(ApiBaseUrl);
             var actor = new Actor("API Client");
             actor.WhoCan(apiAbility);

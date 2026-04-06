@@ -35,11 +35,10 @@ public static class GoogleHomePageActions
     /// <param name="query">The search query.</param>
     /// <returns>An array of ScreenPlay interactions.</returns>
     public static IAction[] SearchFor(string query) =>
-        new IAction[]
-        {
+        [
             EnterSearchTerm(query),
             SubmitSearch()
-        };
+        ];
     
     /// <summary>
     /// Submits the search by pressing Enter key.
@@ -56,7 +55,7 @@ public class SubmitSearch : ITask
     public string TaskName => "Submit search";
     public string Description => "Submit search by pressing Enter";
 
-    public async System.Threading.Tasks.Task PerformAsAsync(IActor actor)
+    public async Task PerformAsAsync(IActor actor)
     {
         var ability = actor.AbilityTo<BrowseTheWeb>();
         await ability.Page.Locator(GoogleHomePageLocators.SearchInput).PressAsync("Enter");
