@@ -1,150 +1,97 @@
-using FluentAssertions;
 using Framework.Core.BDD;
 using Framework.Core.ScreenPlay;
+using Framework.Core.ScreenPlay.Api.Abilities;
+using Framework.Core.ScreenPlay.Api.Tasks;
 using Framework.Core.ScreenPlay.Interfaces;
 using Reqnroll;
-using Scaffolding.Tests.ScreenPlay.Api.Interactions;
-using Scaffolding.Tests.ScreenPlay.Api.Questions;
 
 namespace Scaffolding.Tests.BDD.Steps;
 
 /// <summary>
-/// Step definitions for JSONPlaceholder API feature.
-/// Uses ScreenPlay Pattern for API interactions.
+/// Step definitions for the JSONPlaceholder API feature.
+/// Steps are thin: they hand Screenplay API Tasks / Ensure* tasks to the
+/// actor — request plumbing and assertion logic live in the framework's
+/// reusable Api tasks, not here.
 /// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="JsonPlaceholderApiSteps"/> class.
+/// </remarks>
+/// <param name="scenarioContext">The scenario context.</param>
 [Binding]
-public class JsonPlaceholderApiSteps
+public class JsonPlaceholderApiSteps(ScenarioContext scenarioContext)
 {
-    private readonly ScenarioContext _scenarioContext;
+    private readonly ScenarioContext _scenarioContext = scenarioContext;
     private const string ApiBaseUrl = "https://jsonplaceholder.typicode.com";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="JsonPlaceholderApiSteps"/> class.
+    /// Gets (or lazily creates) the API actor for the current scenario.
     /// </summary>
-    /// <param name="scenarioContext">The scenario context.</param>
-    public JsonPlaceholderApiSteps(ScenarioContext scenarioContext)
-    {
-        _scenarioContext = scenarioContext;
-    }
-
     private IActor Actor => ScenarioActor.GetOrCreate(
-        _scenarioContext, 
-        "ApiActor", 
-        () => {
-            var apiAbility = new CallAnApi(ApiBaseUrl);
+        _scenarioContext,
+        "ApiActor",
+        () =>
+        {
             var actor = new Actor("API Client");
-            actor.WhoCan(apiAbility);
+            actor.WhoCan(new CallAnApi(ApiBaseUrl));
             return actor;
         });
 
-    /// <summary>
-    /// Step: Given the API is available.
-    /// </summary>
+    /// <summary>Step: Given the API is available.</summary>
     [Given("the API is available")]
     public Task GivenTheApiIsAvailable()
-    {
-        return Task.CompletedTask;
-    }
+        => Task.CompletedTask;
 
-    /// <summary>
-    /// Step: When I request all posts.
-    /// </summary>
+    /// <summary>Step: When I request all posts.</summary>
     [When("I request all posts")]
-    public async Task WhenIRequestAllPosts()
-    {
-        await Actor.AttemptsToAsync(new GetRequest("/posts"));
-    }
+    public Task WhenIRequestAllPosts()
+        => Actor.AttemptsToAsync(GetResource.From("/posts"));
 
-    /// <summary>
-    /// Step: When I request post with id.
-    /// </summary>
+    /// <summary>Step: When I request the post with the given id.</summary>
     [When("I request post with id {int}")]
-    public async Task WhenIRequestPostWithId(int postId)
-    {
-        await Actor.AttemptsToAsync(new GetRequest($"/posts/{postId}"));
-    }
+    public Task WhenIRequestPostWithId(int postId)
+        => Actor.AttemptsToAsync(GetResource.From($"/posts/{postId}"));
 
-    /// <summary>
-    /// Step: When I request all users.
-    /// </summary>
+    /// <summary>Step: When I request all users.</summary>
     [When("I request all users")]
-    public async Task WhenIRequestAllUsers()
-    {
-        await Actor.AttemptsToAsync(new GetRequest("/users"));
-    }
+    public Task WhenIRequestAllUsers()
+        => Actor.AttemptsToAsync(GetResource.From("/users"));
 
-    /// <summary>
-    /// Step: Then I should receive a list of posts.
-    /// Uses ScreenPlay Questions for assertions.
-    /// </summary>
+    /// <summary>Step: Then I should receive a list of posts.</summary>
     [Then("I should receive a list of posts")]
-    public async Task ThenIShouldReceiveAListOfPosts()
-    {
-        var isValidJson = await Actor.AsksForAsync(ResponseBodyIsValidJson.Value());
-        isValidJson.Should().BeTrue();
-        
-        var isArray = await Actor.AsksForAsync(ResponseBodyIsArray.Value());
-        isArray.Should().BeTrue();
-    }
+    public Task ThenIShouldReceiveAListOfPosts()
+        => Actor.AttemptsToAsync(
+            EnsureBodyIsValidJson.Now("the API must respond with JSON"),
+            EnsureBodyIsArray.Now("a collection endpoint must return a JSON array"));
 
-    /// <summary>
-    /// Step: Then I should receive the post details.
-    /// Uses ScreenPlay Questions for assertions.
-    /// </summary>
+    /// <summary>Step: Then I should receive the post details.</summary>
     [Then("I should receive the post details")]
-    public async Task ThenIShouldReceiveThePostDetails()
-    {
-        var isValidJson = await Actor.AsksForAsync(ResponseBodyIsValidJson.Value());
-        isValidJson.Should().BeTrue();
-        
-        var isObject = await Actor.AsksForAsync(ResponseBodyIsObject.Value());
-        isObject.Should().BeTrue();
-    }
+    public Task ThenIShouldReceiveThePostDetails()
+        => Actor.AttemptsToAsync(
+            EnsureBodyIsValidJson.Now("the API must respond with JSON"),
+            EnsureBodyIsObject.Now("a single-resource endpoint must return a JSON object"));
 
-    /// <summary>
-    /// Step: And the first post should have an ID.
-    /// Uses ScreenPlay Questions for assertions.
-    /// </summary>
+    /// <summary>Step: And the first post should have an ID.</summary>
     [Then("the first post should have an ID")]
-    public async Task ThenTheFirstPostShouldHaveAnId()
-    {
-        var hasIdField = await Actor.AsksForAsync(ResponseBodyContainsField.Value("id"));
-        hasIdField.Should().BeTrue();
-    }
+    public Task ThenTheFirstPostShouldHaveAnId()
+        => Actor.AttemptsToAsync(
+            EnsureBodyContainsField.Named("id", "each post must expose an 'id' field"));
 
-    /// <summary>
-    /// Step: And the post title should not be empty.
-    /// Uses ScreenPlay Questions for assertions.
-    /// </summary>
+    /// <summary>Step: And the post title should not be empty.</summary>
     [Then("the post title should not be empty")]
-    public async Task ThenThePostTitleShouldNotBeEmpty()
-    {
-        var hasTitleField = await Actor.AsksForAsync(ResponseBodyContainsField.Value("title"));
-        hasTitleField.Should().BeTrue();
-    }
+    public Task ThenThePostTitleShouldNotBeEmpty()
+        => Actor.AttemptsToAsync(
+            EnsureBodyContainsField.Named("title", "each post must expose a 'title' field"));
 
-    /// <summary>
-    /// Step: Then I should receive a list of users.
-    /// Uses ScreenPlay Questions for assertions.
-    /// </summary>
+    /// <summary>Step: Then I should receive a list of users.</summary>
     [Then("I should receive a list of users")]
-    public async Task ThenIShouldReceiveAListOfUsers()
-    {
-        var isValidJson = await Actor.AsksForAsync(ResponseBodyIsValidJson.Value());
-        isValidJson.Should().BeTrue();
-        
-        var isArray = await Actor.AsksForAsync(ResponseBodyIsArray.Value());
-        isArray.Should().BeTrue();
-    }
+    public Task ThenIShouldReceiveAListOfUsers()
+        => Actor.AttemptsToAsync(
+            EnsureBodyIsValidJson.Now("the API must respond with JSON"),
+            EnsureBodyIsArray.Now("a collection endpoint must return a JSON array"));
 
-    /// <summary>
-    /// Step: And the first user should have an email.
-    /// Uses ScreenPlay Questions for assertions.
-    /// </summary>
+    /// <summary>Step: And the first user should have an email.</summary>
     [Then("the first user should have an email")]
-    public async Task ThenTheFirstUserShouldHaveAnEmail()
-    {
-        var hasEmailField = await Actor.AsksForAsync(ResponseBodyContainsField.Value("email"));
-        hasEmailField.Should().BeTrue();
-    }
+    public Task ThenTheFirstUserShouldHaveAnEmail()
+        => Actor.AttemptsToAsync(
+            EnsureBodyContainsField.Named("email", "each user must expose an 'email' field"));
 }

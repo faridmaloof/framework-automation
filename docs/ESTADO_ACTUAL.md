@@ -1,30 +1,23 @@
-# Enterprise Automation Framework - Estado Actual
+# Enterprise Automation Framework — Estado Actual
 
-**Fecha:** 2026-03-14  
-**Versión:** 1.0  
+**Fecha:** 2026-10-11
+**Versión:** 2.0
 **Estado:** ✅ **PRODUCCIÓN**
 
 ---
 
 ## 📊 RESUMEN EJECUTIVO
 
-El framework está **completamente refactorizado y organizado** siguiendo las mejores prácticas de arquitectura:
+Refactorización completada: el framework ahora sigue el patrón **Screenplay
+canónico**, el POM colapsó en **PageObjects** (catálogos de locators agrupados
+por página) y los fallos del motor se traducen a **mensajes humanos**.
 
 ### ✅ Build Status
-- **Framework.Core:** 0 warnings, 0 errors
-- **Scaffolding.Tests:** 0 warnings, 0 errors
-- **Solution:** 0 warnings, 0 errors
+- **Framework.Core:** 0 warnings, 0 errores
+- **Scaffolding.Tests:** 0 warnings, 0 errores
 
 ### ✅ Test Status
-- **Total Tests:** 4
-- **Passed:** 4 (100%)
-- **Failed:** 0
-- **Skipped:** 0
-- **Duration:** ~13 seconds
-
-### ✅ Test Results Location
-- **Directorio:** `src/TestResults/`
-- **Centralizado:** Todos los tests guardan resultados aquí
+- **Total:** 4 (1 web + 3 API) — **100% passing**
 
 ---
 
@@ -34,239 +27,83 @@ El framework está **completamente refactorizado y organizado** siguiendo las me
 
 ```
 Framework.Core/
-├── 📂 BDD/
-│   └── ScenarioActor.cs          # Helper para obtener Actor desde Steps
-│
-├── 📂 ScreenPlay/
-│   ├── Interfaces/               # Contratos (IActor, IAbility, etc.)
-│   ├── Actor.cs                  # Implementación del Actor
-│   ├── ActorBuilder.cs           # Builder fluente
-│   ├── DisposableAbility.cs      # Base para habilidades con recursos
-│   ├── Task.cs                   # Base para Tasks
-│   ├── Interaction.cs            # Base para Interactions
-│   └── Question.cs               # Base para Questions
-│
-├── 📂 Configuration/             # Settings y Enums
-├── 📂 Tools/                     # Database, Allure helpers
-└── 📂 POM/                       # Page Object helpers
+├── BDD/ScenarioActor.cs        # Actor por escenario (sin estado estático)
+├── Configuration/              # Settings, enums, SettingsManager
+├── Exceptions/                 # FrameworkException, AbilityNotFoundException,
+│                                # TargetFailedException (fallos humanos)
+├── ScreenPlay/
+│   ├── Interfaces/             # IActor, IAbility, IAction, ITask, IInteraction, IQuestion
+│   ├── Actor.cs / ActorBuilder.cs / ScreenAbstractions.cs / DisposableAbility.cs
+│   ├── BrowseTheWeb.cs
+│   ├── Locators/               # ITarget, Target (con Page/Parent), TargetExtensions
+│   │                           # TargetGuard → timeouts del motor → fallos legibles
+│   ├── Pages/                  # PageObject (locators por página) + Component (bloques UI)
+│   ├── Web/                    # Interactions (Click, Enter...), Questions, Ensure*
+│   ├── Api/                    # CallAnApi, GetResource/PostResource, Questions, Ensure*
+│   └── Tasks/NavigateToUrl.cs
+└── Tools/                      # Database (8 motores), AllureReportHelper
 ```
 
-### Scaffolding.Tests (Tests de Ejemplo)
+### Scaffolding.Tests (Ejemplos)
 
 ```
 Scaffolding.Tests/
-├── 📂 BDD/
-│   ├── Features/                 # Feature files (.feature)
-│   │   ├── GoogleSearch.feature
-│   │   └── JsonPlaceholderApi.feature
-│   └── Steps/                    # Step definitions
-│       ├── GoogleSearchSteps.cs
-│       └── JsonPlaceholderApiSteps.cs
-│
-├── 📂 ScreenPlay/
-│   ├── Web/
-│   │   ├── Tasks/                # NavigateTo.cs
-│   │   ├── Interactions/         # Click, Enter, etc.
-│   │   └── Questions/            # PageUrl, PageTitle, ElementCount, etc.
-│   └── Api/
-│       ├── Interactions/         # CallAnApi, GetRequest
-│       └── Questions/            # ResponseStatus, ResponseBody
-│
-├── 📂 POM/
-│   └── Google/
-│       ├── Locators/             # GooglePageLocators.cs
-│       └── Actions/              # GoogleHomePageActions.cs
-│
-└── 📂 TestResults/               # Resultados de tests (centralizado)
+├── BDD/
+│   ├── Features/               # GoogleSearch.feature, JsonPlaceholderApi.feature
+│   ├── Steps/                  # Steps delgados (solo Tasks/Ensure* al Actor)
+│   └── Hooks/GlobalHooks.cs    # Actor + BrowseTheWeb por escenario
+└── Pages/Google/
+    ├── SearchBox.cs            # Component reutilizable (input + botón)
+    ├── GoogleHomePage.cs       # PageObject (locators con nombre humano)
+    ├── GoogleSearchResultsPage.cs
+    └── GoogleTasks.cs          # SearchFor (Task de negocio por página)
 ```
 
 ---
 
-## 🎯 COMPONENTES CLAVE
+## 🎯 DECISIONES DE DISEÑO (v2.0)
 
-### 1. ScenarioActor (Framework.Core.BDD)
-
-**Propósito:** Helper genérico para obtener el Actor desde Steps.
-
-**Uso:**
-```csharp
-private IActor Actor => ScenarioActor.Get(_scenarioContext);
-```
-
-**Beneficios:**
-- Elimina código duplicado en cada Steps file
-- Centraliza la lógica de obtención del Actor
-- Valida que el Actor esté inicializado
+| Problema (v1) | Solución (v2) |
+|---|---|
+| POM + Screenplay coexistían (duplicidad de conceptos) | `POM/` eliminado; `PageObject` = catálogo de locators por página, sin comportamiento |
+| Selectores como `const string` sin contexto | `ITarget` tipado: nombre humano + selector + estrategia + página + scope |
+| Selectores repetidos entre páginas | `Component` con root scoped; las páginas estampan `with { Page = Name }` |
+| Errores crudos (`Timeout ... #usuario`) | `TargetGuard` + `TargetFailedException`: `'Carlos' could not fill in 'Usuario' (Login)`; selector solo en inner exception |
+| `ScenarioActor` con cache estático entre escenarios | Sin estado estático: lectura directa del `ScenarioContext` |
+| Steps con lógica de validación / clases Actions duplicadas | Steps delgados + Tasks por página + `Ensure*` reutilizables |
+| Namespaces inconsistentes (`Screenplay` vs `ScreenPlay`) | Unificado a `Framework.Core.ScreenPlay` |
 
 ---
 
-### 2. Questions con Validaciones
+## 🔧 PATRONES EN USO
 
-**SearchResultsVisible:**
-```csharp
-public class SearchResultsVisible : IQuestion<bool>
-{
-    public async Task<bool> AnsweredByAsync(IActor actor)
-    {
-        var ability = actor.AbilityTo<BrowseTheWeb>();
-        var resultsLocator = ability.Page.Locator("div#search div.g");
-        var count = await resultsLocator.CountAsync();
-        return count > 0;  // Retorna bool directamente
-    }
-}
-```
-
-**Uso en Steps:**
-```csharp
-[Then("I should see search results")]
-public async Task ThenIShouldSeeSearchResults()
-{
-    var hasResults = await Actor.AsksForAsync(SearchResultsVisible.Value());
-    hasResults.Should().BeTrue();  // Assertion simple
-}
-```
+1. **Screenplay** — Actor, Abilities, Tasks, Interactions, Questions (puras).
+2. **PageObject** — locators agrupados por página, con nombre humano y descripción.
+3. **Component** — bloques UI reutilizables (header, modal, tabla, caja de búsqueda).
+4. **Ensure\*** — validaciones reutilizables (Question + FluentAssertions).
+5. **BDD (Reqnroll)** — steps delgados; el Actor se obtiene con `ScenarioActor`.
+6. **E2E + API** — `BrowseTheWeb` (Playwright) y `CallAnApi` (RestSharp) sobre el mismo Actor/Task/Question.
 
 ---
 
-### 3. Steps Solo Contienen Steps
+## 📖 DOCUMENTACIÓN
 
-**ANTES (Incorrecto):**
-```csharp
-[Then("I should see search results")]
-public async Task ThenIShouldSeeSearchResults()
-{
-    var ability = Actor.AbilityTo<BrowseTheWeb>();
-    var resultsLocator = ability.Page.Locator("div#search div.g");
-    var count = await resultsLocator.CountAsync();
-    count.Should().BeGreaterThan(0);  // ❌ Lógica en Step
-}
-```
-
-**AHORA (Correcto):**
-```csharp
-[Then("I should see search results")]
-public async Task ThenIShouldSeeSearchResults()
-{
-    var hasResults = await Actor.AsksForAsync(SearchResultsVisible.Value());
-    hasResults.Should().BeTrue();  // ✅ Solo assertion
-}
-```
+- `docs/00_QUICKSTART.md` — Inicio rápido
+- `docs/01_ARCHITECTURE.md` — Arquitectura (PageObject/Component incluidos)
+- `docs/02_USER_GUIDE.md` — Crear tests con la estructura nueva
+- `docs/03_BEST_PRACTICES.md` — Convenciones y anti-patrones
+- `docs/04_AI_AGENT_SKILL.md` — Skill para agentes de IA (fuentes de verdad, plantillas, checklist)
+- `docs/README.md` — Índice
 
 ---
 
-## 📁 ARCHIVOS POR DIRECTORIO
-
-### ScreenPlay/Web/Questions (Un archivo por clase)
-
-| Archivo | Clase | Propósito |
-|---------|-------|-----------|
-| `PageUrl.cs` | `PageUrl` | Obtiene URL de la página |
-| `PageTitle.cs` | `PageTitle` | Obtiene título de la página |
-| `ElementCount.cs` | `ElementCount` | Cuenta elementos |
-| `ElementText.cs` | `ElementText` | Obtiene texto de elemento |
-| `SearchResultsVisible.cs` | `SearchResultsVisible` | Verifica resultados visibles |
-| `SearchResultsCount.cs` | `SearchResultsCount` | Cuenta resultados |
-
-### ScreenPlay/Api (Un archivo por concepto)
-
-| Archivo | Clases | Propósito |
-|---------|--------|-----------|
-| `ApiInteractions.cs` | `CallAnApi`, `GetRequest` | Interacciones API |
-| `ApiQuestions.cs` | `ResponseStatus`, `ResponseBody` | Questions API |
-
----
-
-## 🔧 CONFIGURACIÓN
-
-### TestResults Directory
-
-**Archivo:** `Scaffolding.Tests.csproj`
-
-```xml
-<PropertyGroup>
-  <TestResultsDirectory>$(MSBuildThisFileDirectory)..\TestResults</TestResultsDirectory>
-</PropertyGroup>
-```
-
-**Resultado:** Todos los tests guardan resultados en `src/TestResults/`
-
----
-
-## 📝 DOCUMENTACIÓN ACTUALIZADA
-
-### README.md
-- Quick Start actualizado
-- Estructura de proyectos clara
-- Ejemplos de uso
-
-### docs/
-- `00_QUICKSTART.md` - Inicio rápido
-- `01_ARCHITECTURE.md` - Arquitectura completa
-- `02_USER_GUIDE.md` - Guía de usuario
-- `03_BEST_PRACTICES.md` - Mejores prácticas
-- `README.md` - Índice de docs
-
----
-
-## ✅ VALIDACIÓN FINAL
-
-### Build de Cada Proyecto
+## ✅ VALIDACIÓN
 
 ```bash
-# Framework.Core
-dotnet build Framework.Core/Framework.Core.csproj --configuration Release
-# Resultado: 0 warnings, 0 errors ✅
-
-# Scaffolding.Tests
-dotnet build Scaffolding.Tests/Scaffolding.Tests.csproj --configuration Release
-# Resultado: 0 warnings, 0 errors ✅
-
-# Solution completa
-dotnet build Framework.Automation.sln --configuration Release
-# Resultado: 0 warnings, 0 errors ✅
-```
-
-### Ejecución de Tests
-
-```bash
-dotnet test Scaffolding.Tests/Scaffolding.Tests.csproj \
-  --configuration Release \
-  --logger "console;verbosity=minimal" \
-  --results-directory '../TestResults'
-
-# Resultado: 4/4 tests aprobados ✅
-# Duration: ~13s
-# Test Results: src/TestResults/
+dotnet build src/Framework.Automation.sln --configuration Release   # 0 warnings, 0 errores
+dotnet test  src/Scaffolding.Tests/Scaffolding.Tests.csproj         # 4/4 aprobados
 ```
 
 ---
 
-## 🎯 MEJORAS REALIZADAS
-
-1. ✅ **ScenarioActor en Core** - Helper reutilizable
-2. ✅ **Questions con validaciones** - Lógica de negocio en Questions
-3. ✅ **Steps solo steps** - Sin lógica de validación
-4. ✅ **Archivos individuales** - Una clase por archivo
-5. ✅ **TestResults centralizado** - En `src/TestResults/`
-6. ✅ **Build limpio** - 0 warnings, 0 errors
-7. ✅ **Tests pasando** - 4/4 aprobados
-8. ✅ **Documentación actualizada** - Coincide con implementación
-
----
-
-## 📊 MÉTRICAS ACTUALES
-
-| Métrica | Valor |
-|---------|-------|
-| **Proyectos** | 2 (Framework.Core, Scaffolding.Tests) |
-| **Archivos .cs** | ~40 |
-| **Tests** | 4 (1 web + 3 API) |
-| **Build Time** | ~4 segundos |
-| **Test Duration** | ~13 segundos |
-| **Coverage** | 100% tests passing |
-| **Warnings** | 0 |
-| **Errors** | 0 |
-
----
-
-*Enterprise Automation Framework - Estado Actual y Validado* 🚀
+*Enterprise Automation Framework — Estado actual y validado* 🚀

@@ -123,6 +123,7 @@ Semana 4: Capacitación (8 horas)
 | [01_ARCHITECTURE.md](01_ARCHITECTURE.md) | 👨‍💻 Intermedio+ | 2 horas | Arquitectura |
 | [02_USER_GUIDE.md](02_USER_GUIDE.md) | 👶 Todos | 3 horas | Guía completa |
 | [03_BEST_PRACTICES.md](03_BEST_PRACTICES.md) | 👨‍💻 Intermedio+ | 2 horas | Mejores prácticas |
+| [04_AI_AGENT_SKILL.md](04_AI_AGENT_SKILL.md) | 🤖 Agentes AI | 30 min | Convenciones para construir automatización con agentes |
 | [99_VALIDACION_FINAL.md](99_VALIDACION_FINAL.md) | 🚀 Avanzado | 1 hora | Validación |
 
 ---
@@ -145,7 +146,7 @@ Semana 4: Capacitación (8 horas)
 | **.NET** | Plataforma de Microsoft | El framework usa .NET 10 |
 | **Playwright** | Herramienta para automatizar browsers | Controla Chrome, Firefox, Edge |
 | **ScreenPlay** | Patrón de automatización | Actor, Task, Interaction, Question |
-| **POM** | Page Object Model | Separar locators de acciones |
+| **PageObject** | Catálogo de locators agrupado por pantalla | `Pages/MyApp/LoginPage.cs` |
 | **BDD** | Behavior-Driven Development | Tests en lenguaje natural (Gherkin) |
 | **CI/CD** | Integración/Entrega Continua | Azure DevOps, GitHub Actions |
 
@@ -155,9 +156,11 @@ Semana 4: Capacitación (8 horas)
 |---------|-------------|-----------|
 | **Actor** | Quien ejecuta las acciones | `Framework.Core/ScreenPlay/Actor.cs` |
 | **Ability** | Lo que el Actor puede hacer | `BrowseTheWeb`, `CallAnApi` |
-| **Task** | Acción de negocio | `LoginToApplication`, `SearchForProduct` |
-| **Interaction** | Acción técnica | `Click`, `Enter`, `Navigate` |
-| **Question** | Consulta sobre el estado | `PageTitle`, `ElementCount` |
+| **Task** | Acción de negocio | `SignIn`, `SearchFor`, `Ensure*` |
+| **Interaction** | Acción técnica | `Click`, `Enter`, `PressKey`, `WaitFor` |
+| **Question** | Consulta sobre el estado (sin aserciones) | `CurrentTitle`, `TextOf`, `Count` |
+| **PageObject** | Locators agrupados por página | `Pages/MyApp/LoginPage.cs` |
+| **Component** | Bloque UI reutilizable | `Pages/Google/SearchBox.cs` |
 
 ---
 
@@ -240,14 +243,14 @@ Enterprise Automation Framework
 ├── 🔧 Código
 │   ├── Framework.Core (núcleo reutilizable)
 │   │   ├── ScreenPlay (Actor, Tasks, Interactions, Questions)
+│   │   ├── ScreenPlay/Locators (ITarget, TargetGuard - fallos legibles)
+│   │   ├── ScreenPlay/Pages (PageObject, Component)
 │   │   ├── Configuration (Settings, Enums)
-│   │   ├── Tools (Database, Allure)
-│   │   └── POM (BasePage, Helpers)
+│   │   └── Tools (Database, Allure)
 │   │
 │   └── Scaffolding.Tests (ejemplos)
 │       ├── BDD (Features, Steps, Hooks)
-│       ├── ScreenPlay (Web Tasks, Interactions, Questions)
-│       └── POM (Google Page Objects)
+│       └── Pages (PageObject + Tasks por página)
 │
 └── 🚀 CI/CD
     └── scripts/ (azure-pipelines, build scripts)
@@ -268,7 +271,7 @@ Enterprise Automation Framework
 
 - ✅ Entender la arquitectura completa
 - ✅ Crear tests con ScreenPlay Pattern
-- ✅ Usar Page Object Model correctamente
+- ✅ Usar PageObject y Component correctamente
 - ✅ Configurar múltiples browsers
 - ✅ Organizar tests con tags
 

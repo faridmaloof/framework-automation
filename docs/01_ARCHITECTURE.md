@@ -13,7 +13,7 @@
 3. [Framework.Core](#frameworkcore)
 4. [Scaffolding.Tests](#scaffoldingtests)
 5. [ScreenPlay Pattern](#screenplay-pattern)
-6. [Page Object Model](#page-object-model)
+6. [Page Objects y Components](#page-objects-y-components)
 7. [BDD con Reqnroll](#bdd-con-reqnroll)
 8. [Configuración](#configuración)
 9. [Base de Datos](#base-de-datos)
@@ -46,16 +46,21 @@ Enterprise Automation Framework es un framework de automatización empresarial b
 ```
 src/
 ├── Framework.Core/              # Núcleo del framework (REUTILIZABLE)
-│   ├── ScreenPlay/              # Actor, Tasks, Interactions, Questions
-│   ├── POM/                     # BasePage, PomHelpers
+│   ├── ScreenPlay/              # Actor, Abilities, Tasks, Interactions, Questions
+│   │   ├── Interfaces/          # Contratos (IActor, IAbility, ITask, IQuestion...)
+│   │   ├── Locators/            # ITarget, Target, TargetGuard (fallos legibles)
+│   │   ├── Pages/               # PageObject y Component (locators por página)
+│   │   ├── Web/                 # Interacciones, Questions y Ensure* web
+│   │   ├── Api/                 # Ability, Tasks, Questions y Ensure* de API
+│   │   └── Tasks/               # NavigateToUrl
 │   ├── Tools/                   # Database, AllureReportHelper
-│   ├── Exceptions/              # Excepciones base
+│   ├── Exceptions/              # FrameworkException, TargetFailedException
 │   └── Configuration/           # Settings (ISettings, AllureSettings)
 │
 └── Scaffolding.Tests/           # Tests específicos (PERSONALIZABLE)
     ├── BDD/                     # Features, Steps, Hooks
-    ├── ScreenPlay/              # Tasks, Interactions, Questions específicas
-    └── POM/                     # Locators, Actions específicos
+    └── Pages/                   # Locators + Tasks agrupados por página
+        └── Google/              # SearchBox (Component), GoogleHomePage, GoogleTasks
 ```
 
 ### Reglas de Oro
@@ -64,6 +69,8 @@ src/
 2. **Scaffolding.Tests** - Código ESPECÍFICO de tu proyecto
 3. **Nunca modificar Core** directamente - Extender desde Scaffolding
 4. **Una clase por archivo** - Fácil de encontrar y mantener
+5. **Un locator, un solo lugar** - Los selectores viven únicamente en el
+   `PageObject`/`Component` de su página; nunca en Steps ni en Tests
 
 ---
 
@@ -71,44 +78,78 @@ src/
 
 ### ScreenPlay/
 
-Contiene las interfaces y clases base del ScreenPlay Pattern:
+Interfaces y clases base del ScreenPlay Pattern:
 
 ```
 ScreenPlay/
-├── IActor.cs                    # Contrato del Actor
-├── IAbility.cs                  # Contrato de Habilidades
-├── IAction.cs                   # Contrato de Acciones
-├── ITask.cs                     # Contrato de Tareas
-├── IInteraction.cs              # Contrato de Interacciones
-├── IQuestion.cs                 # Contrato de Preguntas
+├── Interfaces/                  # Contratos
+│   ├── IActor.cs                # Contrato del Actor
+│   ├── IAbility.cs              # Contrato de Habilidades
+│   ├── IAction.cs               # Contrato de Acciones
+│   ├── ITask.cs                 # Contrato de Tasks
+│   ├── IInteraction.cs          # Contrato de Interacciones
+│   └── IQuestion.cs             # Contrato de Questions
 ├── Actor.cs                     # Implementación del Actor
-├── ActorBuilder.cs              # Builder para crear Actores
+├── ActorBuilder.cs              # Builder fluente para crear Actores
+├── ScreenAbstractions.cs        # ScreenTask / ScreenInteraction / ScreenQuestion
 ├── DisposableAbility.cs         # Base para habilidades con recursos
-├── Task.cs                      # Base para Tareas
-├── Interaction.cs               # Base para Interacciones
-├── Question.cs                  # Base para Preguntas
-└── BrowseTheWeb.cs              # Habilidad estándar para Playwright
+├── BrowseTheWeb.cs              # Habilidad estándar (Playwright)
+├── Locators/
+│   ├── ITarget.cs               # Locator tipado (nombre humano + selector)
+│   ├── Target.cs                # Implementación inmutable (record)
+│   ├── TargetExtensions.cs      # Resolución con scope de componentes
+│   └── TargetGuard.cs           # Traduce timeouts del motor a fallos legibles
+├── Pages/
+│   ├── PageObject.cs            # Catálogo de locators agrupado por página
+│   └── Component.cs             # Bloque UI reutilizable con root scoped
+├── Web/
+│   ├── Interactions/            # Click, Clear, Enter, PressKey, Hover, WaitFor
+│   ├── Questions/               # CurrentUrl, CurrentTitle, IsVisible, Count, TextOf...
+│   └── Tasks/                   # Ensure* (validaciones reutilizables)
+├── Api/
+│   ├── Abilities/               # CallAnApi (RestSharp)
+│   ├── Tasks/                   # GetResource, PostResource, Ensure*
+│   └── Questions/               # StatusCode, ResponseBody, BodyIsArray...
+└── Tasks/
+    └── NavigateToUrl.cs         # Navegación reutilizable
 ```
 
-### POM/
+### Pages/
 
-Helpers estándar para Page Object Model:
+El "Page Object Model" colapsa aquí: un `PageObject` es un **catálogo de
+locators agrupado por página** — identidad de página (nombre, URL) + los
+`ITarget` que expone — **sin comportamiento**. El comportamiento vive en los
+Tasks ScreenPlay, que consumen esos targets:
 
 ```csharp
-// BasePage.cs - Base para todas las páginas
-public abstract class BasePage
+// PageObject: SOLO locators, con nombre humano (nunca selectores sueltos)
+public sealed class LoginPage : PageObject
 {
-    public abstract string PageUrl { get; }
-    public abstract string PageTitle { get; }
+    public static readonly LoginPage Instance = new();
+    public override string Name => "Login";
+    public override string Url => "https://app.example.com/login";
+
+    public Target UserField     => ByLabel("usuario", "Usuario", "Credencial de acceso");
+    public Target PasswordField => ByLabel("contraseña", "Contraseña");
+    public Target SubmitButton  => ByTestId("botón ingresar", "login-submit");
+
+    public override IEnumerable<ITarget> Targets => [UserField, PasswordField, SubmitButton];
 }
 
-// PomHelpers.cs - Helpers comunes
-public static class PomHelpers
+// Component: bloque UI reutilizable con scope propio (modal, header, tabla)
+public sealed class ConfirmationModal : Component
 {
-    public static Task WaitForElementVisibleAsync(ILocator locator, int timeoutMs = 30000);
-    public static Task ClickWithRetryAsync(ILocator locator, int maxRetries = 3);
-    public static Task EnterTextAsync(ILocator locator, string text);
+    public static readonly ConfirmationModal Instance =
+        new(Target.Css("modal de confirmación", "[data-testid='confirm-modal']"));
+
+    public Target AcceptButton => Css("botón aceptar", "[data-testid='accept']");
 }
+```
+
+Los fallos referencian el nombre humano y la página — nunca el selector crudo:
+
+```
+'Carlos' could not click 'Botón ingresar' (Login): the element was not found or not ready before the timeout.
 ```
 
 ### Tools/
@@ -155,37 +196,25 @@ Tests en formato Gherkin:
 ```
 BDD/
 ├── Features/                    # Archivos .feature
-│   └── GoogleSearch.feature
-├── Steps/                       # Implementación de steps
-│   └── GoogleSearchSteps.cs
+│   ├── GoogleSearch.feature
+│   └── JsonPlaceholderApi.feature
+├── Steps/                       # Step definitions (delgados)
+│   ├── GoogleSearchSteps.cs
+│   └── JsonPlaceholderApiSteps.cs
 └── Hooks/                       # Hooks de ciclo de vida
     └── GlobalHooks.cs
 ```
 
-### ScreenPlay/
+### Pages/
 
-Implementaciones específicas de Web:
-
-```
-ScreenPlay/Web/
-├── Tasks/                       # Tareas de negocio
-│   └── NavigateTo.cs
-├── Interactions/                # Interacciones técnicas
-│   └── ClickAndEnter.cs
-└── Questions/                   # Consultas de estado
-    └── PageQuestions.cs
-```
-
-### POM/
-
-Page Objects específicos:
+Locators y Tasks específicos, agrupados por página:
 
 ```
-POM/Google/
-├── Locators/                    # Solo selectores
-│   └── GooglePageLocators.cs
-└── Actions/                     # Solo comportamiento
-    └── GooglePageActions.cs
+Pages/Google/
+├── SearchBox.cs                 # Component reutilizable (input + botón)
+├── GoogleHomePage.cs            # PageObject: locators de la home
+├── GoogleSearchResultsPage.cs   # PageObject: locators de resultados
+└── GoogleTasks.cs               # Tasks del flujo de búsqueda (SearchFor)
 ```
 
 ---
@@ -206,85 +235,110 @@ ScreenPlay Pattern es un patrón de automatización que modela:
 
 ```csharp
 // Crear actor con habilidad
-var actor = new ActorBuilder("Test User")
+var actor = new ActorBuilder("Carlos")
     .WithAbility(BrowseTheWeb.With(page))
     .Build();
 
-// Ejecutar tarea
+// Ejecutar: abrir la página y realizar la tarea de negocio SearchFor
 await actor.AttemptsToAsync(
-    new NavigateTo("https://google.com"),
-    Enter.TheText("search").Into("[name='q']"),
-    Click.On("[type='submit']")
-);
+    GoogleHomePage.Instance.Open("networkidle"),
+    SearchFor.Query("Playwright .NET"));
 
-// Consultar estado
-var title = await actor.AsksForAsync(PageTitle.Value());
-title.Should().Contain("Google");
+// Validar con un Ensure* task (la asertación vive ahí, no en el step)
+await actor.AttemptsToAsync(
+    EnsureUrlContains.Text("/search", "la búsqueda debe aterrizar en la URL de resultados"));
+
+// O consultar estado puro con una Question y decidir en el step/test
+var url = await actor.AsksForAsync(CurrentUrl.Value());
+url.Should().Contain("/search");
 ```
 
 ### Jerarquía de Elementos
 
 ```
-Actor (quien ejecuta)
+Actor (quién ejecuta)
 ├── Ability (lo que puede hacer)
-│   └── BrowseTheWeb
-├── Task (tarea de negocio)
-│   └── NavigateTo
-├── Interaction (acción técnica)
-│   ├── Click
-│   └── Enter
-└── Question (consulta)
-    ├── PageTitle
-    └── ElementCount
+│   ├── BrowseTheWeb
+│   └── CallAnApi
+├── Task (tarea de negocio, compuesta)
+│   ├── SearchFor / NavigateToUrl
+│   └── Ensure* (validaciones reutilizables)
+├── Interaction (acción técnica atómica)
+│   ├── Click / Clear / Enter / PressKey / Hover / WaitFor
+│   └── GetResource / PostResource (dominio API)
+└── Question (consulta pura, sin aserciones)
+    ├── CurrentUrl / CurrentTitle / IsVisible / Count / TextOf
+    └── StatusCode / ResponseBody / BodyIsArray
 ```
 
 ---
 
-## PAGE OBJECT MODEL
+## PAGE OBJECTS Y COMPONENTS
 
-### Estructura Recomendada
+### PageObject = catálogo de locators por página
+
+El POM tradicional (con sus "Actions" y helpers de locator crudo) se
+reemplaza por un único tipo base: `PageObject`. Reglas:
+
+1. **PageObject** - SOLO locators (nombre humano + selector + estrategia) e identidad de página
+2. **Tasks** - Composición de Interactions sobre los targets del PageObject
+3. **Steps** - Entregan Tasks/Ensure* al Actor; nunca ven selectores
 
 ```csharp
-// 1. Locators (solo selectores)
-public static class LoginPageLocators
+// 1. PageObject: locators agrupados por página (nombre humano siempre)
+public sealed class LoginPage : PageObject
 {
-    public const string UsernameInput = "[name='username']";
-    public const string PasswordInput = "[name='password']";
-    public const string SubmitButton = "[type='submit']";
+    public static readonly LoginPage Instance = new();
+    public override string Name => "Login";
+    public override string Url => "https://app.example.com/login";
+
+    public Target UserField     => ByLabel("usuario", "Usuario");
+    public Target PasswordField => ByLabel("contraseña", "Contraseña");
+    public Target SubmitButton  => ByTestId("botón ingresar", "login-submit");
 }
 
-// 2. Actions (solo comportamiento)
-public static class LoginPageActions
+// 2. Task de negocio agrupado por página (en Pages/Login/LoginTasks.cs)
+public sealed class SignIn : ScreenTask
 {
-    public static Enter EnterUsername(string username) =>
-        Enter.TheText(username).Into(LoginPageLocators.UsernameInput);
-    
-    public static Click ClickSubmit() =>
-        Click.On(LoginPageLocators.SubmitButton);
-}
-
-// 3. Tasks (composición de acciones)
-public class LoginToApp : Task
-{
-    private readonly string _username;
+    private readonly string _user;
     private readonly string _password;
-    
-    public override async Task PerformAsAsync(IActor actor)
-    {
-        await actor.AttemptsToAsync(
-            LoginPageActions.EnterUsername(_username),
-            LoginPageActions.EnterPassword(_password),
-            LoginPageActions.ClickSubmit()
-        );
-    }
+
+    public SignIn(string user, string password) { _user = user; _password = password; }
+
+    public override string TaskName => $"Sign in as '{_user}'";
+
+    public override Task PerformAsAsync(IActor actor) =>
+        actor.AttemptsToAsync(
+            Enter.TheText(_user).Into(LoginPage.Instance.UserField).Now(),
+            Enter.TheText(_password).Into(LoginPage.Instance.PasswordField).Now(),
+            Click.On(LoginPage.Instance.SubmitButton));
 }
+
+// 3. Step delgado: solo entrega la tarea al actor
+[When("they sign in with {string} and {string}")]
+public Task WhenSignIn(string user, string password)
+    => Actor.AttemptsToAsync(new SignIn(user, password));
 ```
 
-### Reglas POM
+### Component = bloque UI reutilizable
 
-1. **Locators** - SOLO selectores, NUNCA comportamiento
-2. **Actions** - SOLO comportamiento, NUNCA selectores directos
-3. **Tasks** - Composición de Actions para tareas de negocio
+Cuando un bloque (header, modal, tabla, caja de búsqueda) aparece en varias
+páginas, se modela una sola vez como `Component` con su propio root; los
+targets hijos se resuelven con scope y cada página estampa su nombre:
+
+```csharp
+public sealed class SearchBox : Component
+{
+    public static readonly SearchBox Instance =
+        new(Target.Css("cuadro de búsqueda", "form[action='/search']"));
+
+    public Target QueryField  => Css("campo de consulta", "[name='q']");
+    public Target SubmitButton => Css("botón de búsqueda", "[type='submit']");
+}
+
+// Cada página expone el componente con su contexto:
+public Target SearchQueryField => SearchBox.Instance.QueryField with { Page = Name };
+```
 
 ---
 
@@ -300,42 +354,36 @@ Feature: Google Search
   So that I can find information
 
   Scenario: Successful search
-    Given the actor is on the Google home page
+    Given the user is on the Google home page
     When they search for ".NET"
-    Then the page title should contain ".NET"
+    Then the search should execute without errors
 ```
 
 ### Steps
 
+Los steps son **delgados**: obtienen el Actor (helper `ScenarioActor`) y le
+entregan Tasks/Ensure*. Cero selectores, cero lógica de validación:
+
 ```csharp
 [Binding]
-public class GoogleSearchSteps
+public class GoogleSearchSteps(ScenarioContext scenarioContext)
 {
-    private readonly IActor _actor;
-    
-    public GoogleSearchSteps(IActor actor) => _actor = actor;
-    
-    [Given("the actor is on the Google home page")]
-    public async Task GivenOnGooglePage()
-    {
-        await _actor.AttemptsToAsync(new NavigateTo("https://google.com"));
-    }
-    
+    private readonly ScenarioContext _scenarioContext = scenarioContext;
+
+    private IActor Actor => ScenarioActor.Get(_scenarioContext);
+
+    [Given("the user is on the Google home page")]
+    public Task GivenOnGooglePage()
+        => Actor.AttemptsToAsync(GoogleHomePage.Instance.Open("networkidle"));
+
     [When("they search for {string}")]
-    public async Task WhenSearch(string query)
-    {
-        await _actor.AttemptsToAsync(
-            Enter.TheText(query).Into("[name='q']"),
-            Click.On("[type='submit']")
-        );
-    }
-    
-    [Then("the page title should contain {string}")]
-    public async Task ThenTitleContains(string expected)
-    {
-        var title = await _actor.AsksForAsync(PageTitle.Value());
-        title.Should().Contain(expected);
-    }
+    public Task WhenSearch(string query)
+        => Actor.AttemptsToAsync(SearchFor.Query(query));
+
+    [Then("the search should execute without errors")]
+    public Task ThenSearchSucceeded()
+        => Actor.AttemptsToAsync(
+            EnsureUrlContains.Text("/search", "the search must land on a results URL"));
 }
 ```
 
@@ -466,7 +514,7 @@ AllureReportHelper.GenerateReport("allure-results", "allure-report");
 ### ✅ HACER
 
 1. Usar ScreenPlay Pattern para todas las automatizaciones
-2. Separar Locators de Actions en POM
+2. Declarar cada locator UNA sola vez, en el PageObject de su página
 3. Una clase por archivo
 4. Namespaces consistentes
 5. Tests independientes entre sí

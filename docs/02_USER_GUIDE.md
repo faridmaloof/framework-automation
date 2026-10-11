@@ -131,37 +131,57 @@ Feature: Mi Funcionalidad
     Then veo un resultado
 ```
 
-### Paso 2: Crear Locators
+### Paso 2: Crear el PageObject (locators de la página)
 
-`POM/MyApp/Locators/MyPageLocators.cs`:
+`Pages/MyApp/LoginPage.cs`:
 
 ```csharp
-namespace Scaffolding.Tests.POM.MyApp.Locators;
+using Framework.Core.ScreenPlay.Locators;
+using Framework.Core.ScreenPlay.Pages;
 
-public static class MyPageLocators
+namespace Scaffolding.Tests.Pages.MyApp;
+
+public sealed class LoginPage : PageObject
 {
-    public const string UsernameInput = "[name='username']";
-    public const string PasswordInput = "[name='password']";
-    public const string SubmitButton = "[type='submit']";
+    public static readonly LoginPage Instance = new();
+
+    public override string Name => "Login";
+    public override string Url => "https://app.example.com/login";
+
+    // Nombre humano SIEMPRE: los fallos muestran 'Usuario' (Login), no '#username'
+    public Target UserField     => ByLabel("usuario", "Usuario", "Campo de usuario");
+    public Target PasswordField => ByLabel("contraseña", "Contraseña");
+    public Target SubmitButton  => ByTestId("botón ingresar", "login-submit");
+
+    public override IEnumerable<ITarget> Targets => [UserField, PasswordField, SubmitButton];
 }
 ```
 
-### Paso 3: Crear Actions
+### Paso 3: Crear el Task de la página
 
-`POM/MyApp/Actions/MyPageActions.cs`:
+`Pages/MyApp/LoginTasks.cs`:
 
 ```csharp
-using Scaffolding.Tests.ScreenPlay.Web.Interactions;
+using Framework.Core.ScreenPlay;
+using Framework.Core.ScreenPlay.Interfaces;
+using Framework.Core.ScreenPlay.Web.Interactions;
 
-namespace Scaffolding.Tests.POM.MyApp.Actions;
+namespace Scaffolding.Tests.Pages.MyApp;
 
-public static class MyPageActions
+public sealed class SignIn : ScreenTask
 {
-    public static Enter EnterUsername(string username) =>
-        Enter.TheText(username).Into(MyPageLocators.UsernameInput);
-    
-    public static Click ClickSubmit() =>
-        Click.On(MyPageLocators.SubmitButton);
+    private readonly string _user;
+    private readonly string _password;
+
+    public SignIn(string user, string password) { _user = user; _password = password; }
+
+    public override string TaskName => $"Sign in as '{_user}'";
+
+    public override Task PerformAsAsync(IActor actor) =>
+        actor.AttemptsToAsync(
+            Enter.TheText(_user).Into(LoginPage.Instance.UserField).Now(),
+            Enter.TheText(_password).Into(LoginPage.Instance.PasswordField).Now(),
+            Click.On(LoginPage.Instance.SubmitButton));
 }
 ```
 
@@ -170,24 +190,32 @@ public static class MyPageActions
 `BDD/Steps/MyFeatureSteps.cs`:
 
 ```csharp
-using Framework.Core.ScreenPlay;
+using Framework.Core.BDD;
+using Framework.Core.ScreenPlay.Interfaces;
+using Reqnroll;
+using Scaffolding.Tests.Pages.MyApp;
 
 namespace Scaffolding.Tests.BDD.Steps;
 
 [Binding]
-public class MyFeatureSteps
+public class MyFeatureSteps(ScenarioContext scenarioContext)
 {
-    private readonly IActor _actor;
-    
-    public MyFeatureSteps(IActor actor) => _actor = actor;
+    private readonly ScenarioContext _scenarioContext = scenarioContext;
 
-    [Given("estoy en la página")]
-    public async Task GivenOnPage()
-    {
-        await _actor.AttemptsToAsync(
-            new NavigateTo("https://example.com")
-        );
-    }
+    private IActor Actor => ScenarioActor.Get(_scenarioContext);
+
+    [Given("estoy en la página de login")]
+    public Task GivenOnLoginPage()
+        => Actor.AttemptsToAsync(LoginPage.Instance.Open());
+
+    [When("inicio sesión con {string} y {string}")]
+    public Task WhenSignIn(string user, string password)
+        => Actor.AttemptsToAsync(new SignIn(user, password));
+
+    [Then("debo ver el botón de salir")]
+    public Task ThenLogoutVisible()
+        => Actor.AttemptsToAsync(
+            EnsureVisible.Of(HomePage.Instance.LogoutButton, "el login debe llevar al home"));
 }
 ```
 
@@ -319,19 +347,24 @@ pwsh bin/Release/net10.0/playwright.ps1 install
 2. Tests descubiertos: `dotnet test --list-tests`
 3. Tags correctos: `dotnet test --filter "TestCategory=web"`
 
-### Error: "Element not found"
+### Error: "'usuario' no fue encontrado..." (fallo de elemento)
+
+Los mensajes de fallo ya son humanos: dicen **qué actor, qué intención y
+qué elemento con nombre + página** (ej. `'Carlos' could not fill in 'Usuario' (Login)`).
+El selector crudo queda en el inner exception / trace.
 
 **Solución:**
-1. Verificar selector en Locators
-2. Aumentar timeout: `PomHelpers.WaitForElementVisibleAsync(locator, 60000)`
-3. Usar retry: `PomHelpers.ClickWithRetryAsync(locator)`
+1. Verificar el locator en el `PageObject` de la página
+2. Aumentar el timeout del target: `ByTestId("botón", "id", timeout: TimeSpan.FromSeconds(60))`
+3. Si el elemento aparece tras una transición, añadir una espera explícita:
+   `await Actor.AttemptsToAsync(WaitFor.Visible(Página.Instance.Elemento))`
 
 ### Error: "Flaky tests"
 
 **Solución:**
 1. Agregar tag `@flaky`
 2. Configurar reintentos en configuración
-3. Usar `PomHelpers.ClickWithRetryAsync()`
+3. Usar waits explícitos (`WaitFor.Visible/Hidden/Attached`) en vez de esperas fijas
 
 ### Error: "Allure no se abre"
 
@@ -350,11 +383,11 @@ pwsh bin/Release/net10.0/playwright.ps1 show-report allure-results
 
 ### ¿Puedo usar este framework para múltiples aplicaciones?
 
-**Sí.** Cada aplicación tiene su carpeta en `POM/`:
+**Sí.** Cada aplicación tiene su carpeta en `Pages/`:
 
 ```
-POM/
-├── Application1/
+Pages/
+├── Application1/          # PageObject + Component + Tasks por página
 ├── Application2/
 └── Application3/
 ```

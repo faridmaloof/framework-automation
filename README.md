@@ -29,31 +29,41 @@ dotnet test
 | [Arquitectura](docs/01_ARCHITECTURE.md) | Arquitectura completa |
 | [Guía de Usuario](docs/02_USER_GUIDE.md) | Guía detallada |
 | [Mejores Prácticas](docs/03_BEST_PRACTICES.md) | Convenciones y tips |
+| [AI Agent Skill](docs/04_AI_AGENT_SKILL.md) | Cómo construir automatización con agentes de IA |
 
 ## 📦 Estructura
 
 ```
 src/
 ├── Framework.Core/           # Núcleo reutilizable
-│   ├── ScreenPlay/           # Actor, Tasks, Interactions, Questions
+│   ├── ScreenPlay/           # Actor, Abilities, Tasks, Interactions, Questions
+│   │   ├── Interfaces/       # Contratos (IActor, IAbility, ITask...)
+│   │   ├── Locators/         # ITarget, Target, TargetGuard (fallos legibles)
+│   │   ├── Pages/            # PageObject y Component (locators por página)
+│   │   ├── Web/              # Interacciones, Questions y Ensure* web
+│   │   └── Api/              # CallAnApi, GetResource, Ensure* API
 │   ├── Configuration/        # Settings con enums
 │   ├── Tools/                # Database (8 motores), Allure
-│   └── POM/                  # BasePage, PomHelpers
+│   └── Exceptions/           # FrameworkException, TargetFailedException
 │
 └── Scaffolding.Tests/        # Tests de ejemplo
     ├── BDD/                  # Features, Steps, Hooks
-    ├── ScreenPlay/           # Web Tasks, Interactions, Questions
-    └── POM/                  # Google Page Objects
+    └── Pages/                # Locators + Tasks agrupados por página
+        └── Google/           # SearchBox (Component), GoogleHomePage, GoogleTasks
 ```
 
 ## 🎯 Características
 
 - **ScreenPlay Pattern** - Actor, Abilities, Tasks, Interactions, Questions
+- **Page Objects tipados** - Locators agrupados por página, con nombre humano
+- **Fallos humanos** - `'Carlos' could not click 'Botón ingresar' (Login)` en vez de selectores crudos
+- **Components reutilizables** - Bloques UI (header, modal, tabla) sin duplicar locators
 - **Multi-Navegador** - Chrome, Edge, Firefox, Safari, IE, Thorium, Brave, Opera
 - **8 Motores DB** - SQL Server, Oracle, PostgreSQL, MySQL, MariaDB, MongoDB, Redis
 - **Observabilidad** - Prometheus, Grafana, OpenTelemetry
 - **Allure Reporting** - Screenshots, video, traces
 - **CI/CD Ready** - Tags (@smoke, @web, @api, @regression)
+- **AI-Agent Ready** - Convenciones documentadas en [docs/04_AI_AGENT_SKILL.md](docs/04_AI_AGENT_SKILL.md) para que agentes de IA generen automatización consistente
 
 ## ⚙️ Configuración
 

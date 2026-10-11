@@ -57,13 +57,31 @@ public class Actor(string name) : IActor, IDisposable
     public Task AttemptsToAsync(params IAction[] actions)
     {
         ThrowIfDisposed();
-        if (actions == null || actions.Length == 0) return System.Threading.Tasks.Task.CompletedTask;
-        
+        if (actions == null || actions.Length == 0) return Task.CompletedTask;
+
         async Task RunActionsAsync()
         {
-            foreach (var action in actions) await action.PerformAsAsync(this);
+            foreach (var action in actions)
+            {
+                try
+                {
+                    await action.PerformAsAsync(this);
+                }
+                catch (TargetFailedException)
+                {
+                    // Already human-readable (actor + target name + location): pass it through.
+                    throw;
+                }
+                catch (TimeoutException ex)
+                {
+                    // Raw engine timeout without a target: add actor + intent context.
+                    throw new FrameworkException(
+                        $"'{_name}' could not complete '{action.Description}' before the timeout.", ex);
+                }
+                // Any other exception (assertions, programming errors) propagates untouched.
+            }
         }
-        
+
         return RunActionsAsync();
     }
 
@@ -72,7 +90,20 @@ public class Actor(string name) : IActor, IDisposable
     {
         ThrowIfDisposed();
         if (question == null) throw new ArgumentNullException(nameof(question));
-        return await question.AnsweredByAsync(this);
+        try
+        {
+            return await question.AnsweredByAsync(this);
+        }
+        catch (TargetFailedException)
+        {
+            // Already human-readable: pass it through.
+            throw;
+        }
+        catch (TimeoutException ex)
+        {
+            throw new FrameworkException(
+                $"'{_name}' could not answer '{question.Description}' before the timeout.", ex);
+        }
     }
 
     /// <inheritdoc/>
@@ -97,9 +128,7 @@ public class Actor(string name) : IActor, IDisposable
     }
 
     private void ThrowIfDisposed()
-    {
-        if (_disposed) throw new ObjectDisposedException(nameof(Actor));
-    }
+        => ObjectDisposedException.ThrowIf(_disposed, this);
 
     /// <inheritdoc/>
     public void Dispose()
@@ -107,10 +136,9 @@ public class Actor(string name) : IActor, IDisposable
         if (_disposed) return;
         _disposed = true;
         foreach (var ability in _abilities.Values)
-        {
             if (ability is IDisposable d) d.Dispose();
-        }
         _abilities.Clear();
         _memory.Clear();
+        GC.SuppressFinalize(this);
     }
 }

@@ -8,8 +8,8 @@ namespace Framework.Core.Exceptions;
 /// </remarks>
 /// <param name="abilityName">The name of the missing ability.</param>
 /// <param name="actorName">The name of the actor.</param>
-public class AbilityNotFoundException(string abilityName, string actorName) : FrameworkException($"Actor '{actorName}' does not have the ability '{abilityName}'")
-{
+public class AbilityNotFoundException(string abilityName, string actorName) 
+    : FrameworkException($"Actor '{actorName}' does not have the ability '{abilityName}'") {
     /// <summary>
     /// Gets the name of the missing ability.
     /// </summary>

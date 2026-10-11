@@ -1,6 +1,6 @@
 using Framework.Core.ScreenPlay.Interfaces;
 
-namespace Framework.Core.Screenplay;
+namespace Framework.Core.ScreenPlay;
 
 /// <summary>
 /// Base class for abilities that require disposal.

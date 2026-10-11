@@ -3,8 +3,8 @@ namespace Framework.Core.Exceptions;
 /// <summary>
 /// Base exception for all framework exceptions.
 /// </summary>
-public class FrameworkException : Exception
-{
+public class FrameworkException 
+    : Exception {
     /// <summary>
     /// Initializes a new instance of the <see cref="FrameworkException"/> class.
     /// </summary>

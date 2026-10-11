@@ -4,31 +4,27 @@ using Reqnroll;
 namespace Framework.Core.BDD;
 
 /// <summary>
-/// Helper for accessing Actor from Reqnroll ScenarioContext.
-/// Provides type-safe actor retrieval for step definitions.
+/// Helper for accessing Actors from the Reqnroll ScenarioContext.
+/// Provides type-safe, per-scenario actor retrieval for step definitions.
+/// No static state: every lookup reads the current scenario's context, so
+/// parallel scenarios never share or leak actors.
 /// </summary>
 public static class ScenarioActor
 {
-    private static IActor? _cachedActor;
-
     /// <summary>
-    /// Gets the actor from the scenario context.
-    /// Throws if actor is not initialized (BeforeScenario hook must run first).
+    /// Gets the primary actor from the scenario context.
+    /// Throws if the actor is not initialized (BeforeScenario hook must run first).
     /// </summary>
     /// <param name="scenarioContext">The Reqnroll scenario context.</param>
     /// <returns>The initialized actor.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when actor is not initialized.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the actor is not initialized.</exception>
     public static IActor Get(ScenarioContext scenarioContext)
     {
-        if (_cachedActor == null)
+        if (!scenarioContext.TryGetValue("Actor", out var actorFromContext) || actorFromContext is not IActor actor)
         {
-            if (!scenarioContext.TryGetValue("Actor", out var actorFromContext))
-            {
-                throw new InvalidOperationException("Actor not initialized. BeforeScenario hook must run first.");
-            }
-            _cachedActor = (IActor)actorFromContext;
+            throw new InvalidOperationException("Actor not initialized. BeforeScenario hook must run first.");
         }
-        return _cachedActor;
+        return actor;
     }
 
     /// <summary>
@@ -48,13 +44,5 @@ public static class ScenarioActor
             return actor;
         }
         return (IActor)actorFromContext;
-    }
-
-    /// <summary>
-    /// Clears the cached actor (for cleanup).
-    /// </summary>
-    public static void Clear()
-    {
-        _cachedActor = null;
     }
 }

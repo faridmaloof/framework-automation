@@ -1,5 +1,4 @@
 using Microsoft.Playwright;
-using Framework.Core.Screenplay;
 
 namespace Framework.Core.ScreenPlay;
 

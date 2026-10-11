@@ -30,7 +30,7 @@ public class GlobalHooks(ScenarioContext scenarioContext)
     public static async Task BeforeTestRunAsync()
     {
         Console.WriteLine("=== Test Run Started ===");
-        await System.Threading.Tasks.Task.CompletedTask;
+        await Task.CompletedTask;
     }
 
     /// <summary>
@@ -40,7 +40,7 @@ public class GlobalHooks(ScenarioContext scenarioContext)
     public static async Task AfterTestRunAsync()
     {
         Console.WriteLine("=== Test Run Finished ===");
-        await System.Threading.Tasks.Task.CompletedTask;
+        await Task.CompletedTask;
     }
 
     /// <summary>

@@ -1,5 +1,12 @@
 # ✅ Validación Final del Proyecto
 
+> **Nota (v2.0):** este documento corresponde a la validación de la versión 1.0
+> del framework. Desde entonces se realizó la refactorización al patrón
+> Screenplay canónico (PageObject/Component por página, `TargetGuard` con
+> fallos humanos, eliminación del POM). El estado vigente se encuentra en
+> [ESTADO_ACTUAL.md](ESTADO_ACTUAL.md) y las convenciones actuales en
+> [04_AI_AGENT_SKILL.md](04_AI_AGENT_SKILL.md).
+
 **Fecha:** 2026-03-14  
 **Estado:** ✅ **APROBADO PARA PRODUCCIÓN**
 

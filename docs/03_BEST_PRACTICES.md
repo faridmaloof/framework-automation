@@ -33,41 +33,46 @@ public class DoLogin : Task { }
 public class ClickButton : Task { }
 ```
 
-**Componer Tasks de Interactions:**
+**Componer Tasks de Interactions sobre targets del PageObject:**
 ```csharp
-// ✅ BIEN
-public class LoginToApp : Task
+// ✅ BIEN — los selectores viven solo en LoginPage
+public class LoginToApp : ScreenTask
 {
     public override async Task PerformAsAsync(IActor actor)
     {
         await actor.AttemptsToAsync(
-            Enter.TheText(username).Into("#user"),
-            Enter.TheText(password).Into("#pass"),
-            Click.On("#submit")
+            Enter.TheText(username).Into(LoginPage.Instance.UserField).Now(),
+            Enter.TheText(password).Into(LoginPage.Instance.PasswordField).Now(),
+            Click.On(LoginPage.Instance.SubmitButton)
         );
     }
 }
 
-// ❌ MAL - Lógica de negocio en Steps
-[When("login")]
-public async Task WhenLogin()
+// ❌ MAL — selectores crudos repartidos por el código
+public class LoginToApp : ScreenTask
 {
-    await _actor.AttemptsToAsync(
-        Enter.TheText("user").Into("#user"),  // ❌ Esto debería ser Task
-        Enter.TheText("pass").Into("#pass"),
-        Click.On("#submit")
-    );
+    public override async Task PerformAsAsync(IActor actor)
+    {
+        await actor.AttemptsToAsync(
+            Enter.TheText(username).Into("#user").Now(),   // ❌ selector suelto
+            Enter.TheText(password).Into("#pass").Now(),
+            Click.On("#submit")
+        );
+    }
 }
 ```
 
-**Usar Questions para assertions:**
+**Usar Questions / Ensure* para assertions:**
 ```csharp
-// ✅ BIEN
-var title = await _actor.AsksForAsync(PageTitle.Value());
+// ✅ BIEN — validación reutilizable encapsulada en un Ensure* task
+await actor.AttemptsToAsync(EnsureTextOf.Contains(HomePage.Instance.Title, "Bienvenido"));
+
+// ✅ BIEN — Question pura + asertación en el step/test
+var title = await actor.AsksForAsync(CurrentTitle.Value());
 title.Should().Contain("Google");
 
-// ❌ MAL
-var page = _actor.AbilityTo<BrowseTheWeb>().Page;
+// ❌ MAL — acceder al Page de Playwright desde un step
+var page = actor.AbilityTo<BrowseTheWeb>().Page;
 var title = await page.TitleAsync();
 title.Should().Contain("Google");
 ```
@@ -76,57 +81,62 @@ title.Should().Contain("Google");
 
 1. **No mezclar Tasks con Steps**
 2. **No poner lógica de negocio en Steps**
-3. **No acceder directamente al Page desde Steps**
+3. **No acceder directamente al Page de Playwright desde Steps**
 4. **No crear Tasks demasiado grandes**
 
 ---
 
-## PAGE OBJECT MODEL
+## PAGE OBJECTS Y COMPONENTS
 
 ### ✅ HACER
 
-**Separar Locators de Actions:**
+**Declarar los locators de la página en su PageObject, con nombre humano:**
 ```csharp
-// ✅ BIEN - Locators
+// ✅ BIEN — nombre humano + selector + descripción, en un solo lugar
+public sealed class LoginPage : PageObject
+{
+    public static readonly LoginPage Instance = new();
+    public override string Name => "Login";
+    public override string Url => "/login";
+
+    public Target UserField => ByLabel("usuario", "Usuario", "Credencial de acceso");
+}
+
+// ❌ MAL — selectores como constantes sueltas sin contexto ni página
 public static class LoginPageLocators
 {
     public const string UsernameInput = "[name='username']";
-    public const string PasswordInput = "[name='password']";
-}
-
-// ✅ BIEN - Actions
-public static class LoginPageActions
-{
-    public static Enter EnterUsername(string username) =>
-        Enter.TheText(username).Into(LoginPageLocators.UsernameInput);
 }
 ```
 
 **Usar data-testid:**
 ```csharp
 // ✅ BIEN - Estable
-public const string SubmitButton = "[data-testid='submit-button']";
+public Target SubmitButton => ByTestId("botón ingresar", "submit-button");
 
 // ❌ MAL - Frágil
-public const string SubmitButton = "button:nth-child(3) > div > span";
+public Target SubmitButton => Css("botón ingresar", "button:nth-child(3) > div > span");
 ```
 
-**Heredar de BasePage:**
+**Modelar bloques reutilizables como Component:**
 ```csharp
-// ✅ BIEN
-public class LoginPage : BasePage
+// ✅ BIEN — un header compartido por N páginas se declara una sola vez
+public sealed class SiteHeader : Component
 {
-    public override string PageUrl => "/login";
-    public override string PageTitle => "Login - My App";
+    public static readonly SiteHeader Instance =
+        new(Target.Css("cabecera", "header[role='banner']"));
+
+    public Target LogoutLink => ByText("enlace de salida", "Cerrar sesión");
 }
 ```
 
 ### ❌ NO HACER
 
-1. **No mezclar selectores con comportamiento**
+1. **No mezclar selectores con comportamiento** (el PageObject no tiene lógica)
 2. **No usar XPath complejos**
 3. **No usar índices (nth-child)**
-4. **No hardcodear URLs en tests**
+4. **No hardcodear URLs en tests** (usar `PageObject.Url` / `Open()`)
+5. **No duplicar locators** entre páginas (usar `Component`)
 
 ---
 
@@ -362,9 +372,10 @@ public class Logout : Task { }
 
 **Usar waits explícitos:**
 ```csharp
-// ✅ BIEN - Wait explícito
-await PomHelpers.WaitForElementVisibleAsync(locator);
-await locator.ClickAsync();
+// ✅ BIEN - Wait explícito con la interaction WaitFor (Playwright auto-waita el click)
+await actor.AttemptsToAsync(
+    WaitFor.Visible(Pagina.Instance.Elemento),
+    Click.On(Pagina.Instance.Elemento));
 
 // ❌ MAL - Thread.Sleep
 Thread.Sleep(5000);

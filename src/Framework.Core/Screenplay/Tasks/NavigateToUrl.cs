@@ -8,21 +8,15 @@ namespace Framework.Core.ScreenPlay.Tasks;
 /// Task to navigate to a URL.
 /// Reusable across all web automation projects.
 /// </summary>
-public class NavigateToUrl : ScreenTask
+/// <remarks>
+/// Initializes a new instance of the <see cref="NavigateToUrl"/> class.
+/// </remarks>
+/// <param name="url">The URL to navigate to.</param>
+/// <param name="waitFor">Optional wait condition.</param>
+public class NavigateToUrl(string url, string? waitFor = null) : ScreenTask
 {
-    private readonly string _url;
-    private readonly string? _waitFor;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="NavigateToUrl"/> class.
-    /// </summary>
-    /// <param name="url">The URL to navigate to.</param>
-    /// <param name="waitFor">Optional wait condition.</param>
-    public NavigateToUrl(string url, string? waitFor = null)
-    {
-        _url = url;
-        _waitFor = waitFor;
-    }
+    private readonly string _url = url;
+    private readonly string? _waitFor = waitFor;
 
     /// <inheritdoc/>
     public override string TaskName => $"Navigate to {_url}";
