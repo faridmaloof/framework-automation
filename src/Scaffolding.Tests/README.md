@@ -7,18 +7,25 @@ framework: Screenplay puro, locators agrupados por página y steps delgados.
 
 ```
 Scaffolding.Tests/
+├── reqnroll.json             # Declara Framework.Core como assembly de bindings
+├── appsettings.json          # Config (Headless, timeouts, Api...) — la fuente es Core
 ├── BDD/
-│   ├── Features/              # Gherkin (.feature) con tags @web/@api/@smoke
-│   ├── Steps/                 # Step definitions DELGADOS (solo entregan acciones al Actor)
-│   └── Hooks/                 # Ciclo de vida: Actor + BrowseTheWeb por escenario
+│   ├── Features/             # Gherkin (.feature) con tags @web/@api/@smoke/@multi-actor
+│   └── Steps/                # Step definitions DELGADOS (solo entregan acciones al Actor)
 │
-└── Pages/                     # Locators + Tasks agrupados por página (aquí vive todo lo "de página")
+└── Pages/                    # Locators + Tasks agrupados por página (aquí vive todo lo "de página")
     └── Google/
         ├── SearchBox.cs               # Component: bloque UI reutilizable con scope
         ├── GoogleHomePage.cs          # PageObject: catálogo de locators de la home
         ├── GoogleSearchResultsPage.cs # PageObject: catálogo de locators de resultados
         └── GoogleTasks.cs             # Task de negocio del flujo (SearchFor)
 ```
+
+> **Sin hooks propios:** el ciclo de vida (browser, contexto, evidencia,
+> personas, reportes) vive en `Framework.Core/Lifecycle` como bindings
+> `[Binding]`. Este proyecto solo los **consume** declarando `Framework.Core`
+> en `reqnroll.json`. Para multi-actor con sesiones aisladas, usa
+> `ScenarioActor.PersonaAsync(...)` en los steps.
 
 ## 🎯 Patrones implementados
 

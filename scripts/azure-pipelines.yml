@@ -22,7 +22,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: 'src/Framework.Automation.slnx'
+  solution: 'src/Framework.Automation.sln'
   buildConfiguration: 'Release'
   dotnetVersion: '10.x'
 
@@ -97,9 +97,17 @@ stages:
             displayName: 'Install Playwright Browsers'
             inputs:
               command: 'custom'
-              custom: 'exec'
-              arguments: 'playwright.ps1 install --with-deps'
-              workingDirectory: 'src/Automation.UI.Tests'
+              custom: 'build'
+              arguments: 'src/Scaffolding.Tests/Scaffolding.Tests.csproj'
+              workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+          - task: PowerShell@2
+            displayName: 'Install Playwright Browsers'
+            inputs:
+              targetType: 'inline'
+              script: |
+                $dll = Get-ChildItem -Path 'src/Scaffolding.Tests/bin' -Recurse -Filter 'playwright.ps1' | Select-Object -First 1
+                if ($dll) { pwsh $dll.FullName install --with-deps } else { Write-Warning 'playwright.ps1 not found, skipping browser install' }
 
           - task: DotNetCoreCLI@2
             displayName: 'Run UI Tests'

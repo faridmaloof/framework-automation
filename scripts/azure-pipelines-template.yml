@@ -4,7 +4,7 @@
 parameters:
   - name: solutionPath
     type: string
-    default: 'src/Framework.Automation.slnx'
+    default: 'src/Framework.Automation.sln'
   - name: configuration
     type: string
     default: 'Release'

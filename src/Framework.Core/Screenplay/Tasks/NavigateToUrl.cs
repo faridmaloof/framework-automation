@@ -1,4 +1,3 @@
-using Framework.Core.ScreenPlay;
 using Framework.Core.ScreenPlay.Interfaces;
 using Microsoft.Playwright;
 

@@ -65,6 +65,7 @@ coverage*.info
 AllureResults/
 allure-results/
 allure-report/
+test-history/
 
 # ============================================
 # PLAYWRIGHT

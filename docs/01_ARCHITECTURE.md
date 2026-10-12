@@ -201,8 +201,7 @@ BDD/
 ├── Steps/                       # Step definitions (delgados)
 │   ├── GoogleSearchSteps.cs
 │   └── JsonPlaceholderApiSteps.cs
-└── Hooks/                       # Hooks de ciclo de vida
-    └── GlobalHooks.cs
+└── (sin Hooks: el ciclo de vida vive en Framework.Core/Lifecycle)
 ```
 
 ### Pages/
@@ -387,24 +386,34 @@ public class GoogleSearchSteps(ScenarioContext scenarioContext)
 }
 ```
 
-### Hooks
+### Hooks (ciclo de vida en Core)
+
+El ciclo de vida **no se escribe en el proyecto de pruebas**: vive en
+`Framework.Core/Lifecycle` como bindings `[Binding]` y se consume declarando el
+assembly en `reqnroll.json` (`bindingAssemblies`).
 
 ```csharp
+// Framework.Core/Lifecycle/WebLifecycleHooks.cs  (framework, no el scaffolding)
 [Binding]
-public class GlobalHooks
+public sealed class WebLifecycleHooks
 {
-    [BeforeScenario("web")]
-    public async Task BeforeWebScenario()
-    {
-        // Setup browser, context, page, actor
-    }
-    
-    [AfterScenario]
-    public async Task AfterScenario()
-    {
-        // Cleanup resources
-    }
+    [BeforeTestRun]
+    public static void BeforeTestRun() { /* carga config, browser lazy compartido */ }
+
+    [BeforeScenario]                 // actúa solo en escenarios @web
+    public async Task BeforeScenario() { /* contexto aislado + personas */ }
+
+    [AfterScenario(Order = 100)]
+    public async Task AfterScenario() { /* evidencia + cierre de contextos */ }
 }
+```
+
+En los steps, el actor se resuelve con `ScenarioActor`. Para un actor
+**secundario con sesión aislada** (multi-actor), se pide explícitamente:
+
+```csharp
+var admin = await ScenarioActor.PersonaAsync(ctx, "administrator");
+await admin.AttemptsToAsync(...);
 ```
 
 ---
@@ -505,6 +514,49 @@ AllureReportHelper.OpenReport("allure-results");
 ```csharp
 // Generar reporte estático
 AllureReportHelper.GenerateReport("allure-results", "allure-report");
+```
+
+### Historial Acumulativo (default: Cumulative)
+
+Por defecto el framework usa `AllureHistory = Cumulative`: cada ejecución se
+guarda en su propio subdirectorio (`allure-results/<RunId>/`) con todos los
+resultados y evidencias, y el reporte HTML se genera siempre a partir de
+`allure-results/latest/`, que es el rollo acumulado de todos los runs
+retenidos.
+
+| Concepto | Comportamiento |
+|---|---|
+| `AllureHistory` | `Cumulative` (predeterminado) o `Overwrite` (directorio tal cual). |
+| `KeepPastRuns` | Número de ejecuciones que se conservan (`20` por defecto). |
+| `ResolveRunResultsDirectory` | En `Cumulative` → `allure-results/<RunId>/`; en `Overwrite` → `allure-results/`. |
+| `ResolveCumulativeResultsDirectory` | Siempre → `allure-results/latest/`. |
+| `AllureReportHelper.MergeResults` | Copia solo. Cada resultado conserva su `uuid` propio; el mismo `historyId` (`"Feature::Scenario"`) se acumula como reintento del mismo test en el History tab del reporte. |
+| `RebuildCumulativeResults` | Reconstruye `latest/` desde los runs retainidos (oldest → newest) para que la poda no afecte el histórico. |
+| `PruneOldRuns` | Elimina los folders del run más allá del límite de retención. |
+| `history.json` | `allure-report/history/history.json` agrega todos los outcomes anteriores por test. |
+| `history/*.json` | Todos los archivos de tendencia (duration, retry, categories, history) copiados al HTML. |
+| `environment.properties` | Del nuevo run más reciente; choca con el más antiguo. |
+
+```csharp
+// appsettings.json — configuración por defecto
+{
+  "Framework": {
+    "Reporting": {
+      "AllureHistory": "Cumulative",
+      "KeepPastRuns": 20,
+      "GenerateReport": "OnceAtEnd",
+      "ServeReport": false,
+      "ReportPort": 56789
+    }
+  }
+}
+```
+
+### Abrir el reporte
+
+```csharp
+// Publica y abre el reporte acumulado (si ServeReport = true)
+AllureReportHelper.ServeReport("allure-results/latest", 56789);
 ```
 
 ---

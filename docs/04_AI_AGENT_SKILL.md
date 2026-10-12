@@ -168,14 +168,18 @@ var status = await actor.AsksForAsync(StatusCode.OfLastResponse());  // Question
 
 ```
 src/Scaffolding.Tests/
+├── reqnroll.json                 # Declara Framework.Core como assembly de bindings
 ├── BDD/
 │   ├── Features/<Flujo>.feature      # Gherkin, tags @web/@api/@smoke
-│   ├── Steps/<Flujo>Steps.cs         # Delgados
-│   └── Hooks/GlobalHooks.cs          # Actor + BrowseTheWeb por escenario
+│   └── Steps/<Flujo>Steps.cs         # Delgados (usa ScenarioActor / PersonaAsync)
 └── Pages/<App>/
     ├── <Componente>.cs               # Component (si es reutilizable)
     ├── <Pagina>.cs                   # PageObject (locators agrupados por página)
     └── <Flujo>Tasks.cs               # Tasks de negocio del flujo
+```
+
+> No hay carpeta `Hooks/`: el ciclo de vida (browser, contexto, evidencia,
+> personas, reportes) lo provee `Framework.Core/Lifecycle` vía `reqnroll.json`.
 ```
 
 ## 5. Anti-patrones prohibidos (el agente DEBE rechazarlos)

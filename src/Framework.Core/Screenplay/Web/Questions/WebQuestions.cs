@@ -1,6 +1,5 @@
 using Framework.Core.ScreenPlay.Interfaces;
 using Framework.Core.ScreenPlay.Locators;
-using Microsoft.Playwright;
 
 namespace Framework.Core.ScreenPlay.Web.Questions;
 

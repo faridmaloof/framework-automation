@@ -18,6 +18,40 @@ public static class ApiMemoryKeys
 
     /// <summary>Last response headers (IDictionary&lt;string,string&gt;).</summary>
     public const string LastHeaders = "api.last.headers";
+
+    /// <summary>Last request line, e.g. "GET /posts" (string).</summary>
+    public const string LastRequest = "api.last.request";
+
+    /// <summary>Last request duration in milliseconds (long).</summary>
+    public const string LastElapsedMs = "api.last.elapsed";
+
+    /// <summary>Monotonic count of requests performed (int). Hooks use it to
+    /// know whether the current step issued a new request.</summary>
+    public const string RequestCount = "api.request.count";
+
+    /// <summary>Last request body sent (string, may be null/empty for GETs).</summary>
+    public const string LastRequestBody = "api.last.requestBody";
+}
+
+/// <summary>Shared helper that stores the last-response evidence in the actor's
+/// memory (status, body, headers, request line and elapsed time) and bumps the
+/// monotonic request counter.</summary>
+internal static class ApiMemory
+{
+    public static void RememberExchange(IActor actor, string requestLine, string? requestBody, RestResponse response, long elapsedMs)
+    {
+        actor.Remember(ApiMemoryKeys.LastRequest, requestLine);
+        actor.Remember(ApiMemoryKeys.LastRequestBody, requestBody ?? string.Empty);
+        actor.Remember(ApiMemoryKeys.LastElapsedMs, elapsedMs);
+        actor.Remember(ApiMemoryKeys.LastStatusCode, (int)response.StatusCode);
+        actor.Remember(ApiMemoryKeys.LastBody, response.Content ?? string.Empty);
+        actor.Remember(ApiMemoryKeys.LastHeaders,
+            response.Headers?
+                .GroupBy(h => h.Name ?? string.Empty)
+                .ToDictionary(g => g.Key, g => string.Join(", ", g.Select(h => h.Value ?? string.Empty)))
+                ?? new Dictionary<string, string>());
+        actor.Remember(ApiMemoryKeys.RequestCount, actor.Remembered<int>(ApiMemoryKeys.RequestCount) + 1);
+    }
 }
 
 /// <summary>
@@ -44,15 +78,10 @@ public sealed class GetResource : ScreenTask
     {
         var api = actor.AbilityTo<CallAnApi>();
         var request = new RestRequest(_endpoint, Method.Get);
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         var response = await api.Client.ExecuteAsync(request);
-
-        actor.Remember(ApiMemoryKeys.LastStatusCode, (int)response.StatusCode);
-        actor.Remember(ApiMemoryKeys.LastBody, response.Content ?? string.Empty);
-        actor.Remember(ApiMemoryKeys.LastHeaders,
-            response.Headers?
-                .GroupBy(h => h.Name ?? string.Empty)
-                .ToDictionary(g => g.Key, g => string.Join(", ", g.Select(h => h.Value ?? string.Empty)))
-                ?? new Dictionary<string, string>());
+        sw.Stop();
+        ApiMemory.RememberExchange(actor, $"GET {_endpoint}", requestBody: null, response, sw.ElapsedMilliseconds);
     }
 }
 
@@ -91,9 +120,9 @@ public sealed class PostResource : ScreenTask
         var api = actor.AbilityTo<CallAnApi>();
         var request = new RestRequest(_endpoint, Method.Post)
             .AddStringBody(_jsonBody, DataFormat.Json);
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         var response = await api.Client.ExecuteAsync(request);
-
-        actor.Remember(ApiMemoryKeys.LastStatusCode, (int)response.StatusCode);
-        actor.Remember(ApiMemoryKeys.LastBody, response.Content ?? string.Empty);
+        sw.Stop();
+        ApiMemory.RememberExchange(actor, $"POST {_endpoint}", requestBody: _jsonBody, response, sw.ElapsedMilliseconds);
     }
 }

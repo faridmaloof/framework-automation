@@ -3,7 +3,11 @@ using Microsoft.Extensions.Configuration;
 namespace Framework.Core.Configuration;
 
 /// <summary>
-/// Manages framework configuration loading.
+/// Manages framework configuration loading. Configuration ALWAYS comes from
+/// Core: the test project only ships appsettings*.json files; nothing in the
+/// hooks or steps hard-codes browser/evidence/reporting behaviour.
+/// Environment resolution order: FRAMEWORK_ENVIRONMENT → DOTNET_ENVIRONMENT →
+/// ASPNETCORE_ENVIRONMENT → "Development".
 /// </summary>
 public static class SettingsManager
 {
@@ -11,27 +15,35 @@ public static class SettingsManager
     private static FrameworkSettings? _frameworkSettings;
     private static DeviceSettings? _deviceSettings;
     private static AllureSettings? _allureSettings;
+    private static ApiSettings? _apiSettings;
 
     /// <summary>
-    /// Gets the configuration root.
+    /// Gets the configuration root. Files are read from the test assembly
+    /// directory (AppContext.BaseDirectory), where appsettings*.json are
+    /// copied at build time.
     /// </summary>
     public static IConfigurationRoot Configuration
     {
         get
         {
-            if (_configuration == null)
-            {
-                var builder = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development"}.json", optional: true, reloadOnChange: true)
-                    .AddEnvironmentVariables();
-
-                _configuration = builder.Build();
-            }
+            _configuration ??= BuildConfiguration(AppContext.BaseDirectory);
             return _configuration;
         }
     }
+
+    private static string ResolveEnvironment() =>
+        Environment.GetEnvironmentVariable("FRAMEWORK_ENVIRONMENT")
+        ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+        ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+        ?? "Development";
+
+    private static IConfigurationRoot BuildConfiguration(string basePath) =>
+        new ConfigurationBuilder()
+            .SetBasePath(basePath)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+            .AddJsonFile($"appsettings.{ResolveEnvironment()}.json", optional: true, reloadOnChange: false)
+            .AddEnvironmentVariables(prefix: "FRAMEWORK_")
+            .Build();
 
     /// <summary>
     /// Gets the framework settings.
@@ -40,10 +52,7 @@ public static class SettingsManager
     {
         get
         {
-            if (_frameworkSettings == null)
-            {
-                _frameworkSettings = Configuration.GetSection("Framework").Get<FrameworkSettings>() ?? new FrameworkSettings();
-            }
+            _frameworkSettings ??= Configuration.GetSection("Framework").Get<FrameworkSettings>() ?? new FrameworkSettings();
             return _frameworkSettings;
         }
     }
@@ -55,10 +64,7 @@ public static class SettingsManager
     {
         get
         {
-            if (_deviceSettings == null)
-            {
-                _deviceSettings = Configuration.GetSection("Device").Get<DeviceSettings>() ?? new DeviceSettings();
-            }
+            _deviceSettings ??= Configuration.GetSection("Device").Get<DeviceSettings>() ?? new DeviceSettings();
             return _deviceSettings;
         }
     }
@@ -70,29 +76,33 @@ public static class SettingsManager
     {
         get
         {
-            if (_allureSettings == null)
-            {
-                _allureSettings = Configuration.GetSection("Allure").Get<AllureSettings>() ?? new AllureSettings();
-            }
+            _allureSettings ??= Configuration.GetSection("Allure").Get<AllureSettings>() ?? new AllureSettings();
             return _allureSettings;
         }
     }
 
     /// <summary>
-    /// Loads configuration from the specified path.
+    /// Gets the API settings (base URL and timeout) for the target service.
+    /// </summary>
+    public static ApiSettings ApiSettings
+    {
+        get
+        {
+            _apiSettings ??= Configuration.GetSection("Api").Get<ApiSettings>() ?? new ApiSettings();
+            return _apiSettings;
+        }
+    }
+
+    /// <summary>
+    /// Loads configuration from the specified path and resets cached settings.
     /// </summary>
     /// <param name="basePath">The base path for configuration files.</param>
     public static void LoadFrom(string basePath)
     {
-        var builder = new ConfigurationBuilder()
-            .SetBasePath(basePath)
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development"}.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables();
-
-        _configuration = builder.Build();
+        _configuration = BuildConfiguration(basePath);
         _frameworkSettings = null;
         _deviceSettings = null;
         _allureSettings = null;
+        _apiSettings = null;
     }
 }

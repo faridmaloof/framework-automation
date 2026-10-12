@@ -2,6 +2,8 @@ namespace Framework.Core.Configuration;
 
 /// <summary>
 /// Framework settings interface.
+/// NOTE: headless mode is NOT part of the framework section — it belongs to
+/// <see cref="IDeviceSettings"/> (single source of truth, section "Device").
 /// </summary>
 public interface IFrameworkSettings
 {
@@ -14,11 +16,6 @@ public interface IFrameworkSettings
     /// Gets the culture.
     /// </summary>
     string Culture { get; }
-
-    /// <summary>
-    /// Gets whether to run in headless mode.
-    /// </summary>
-    bool Headless { get; }
 }
 
 /// <summary>

@@ -307,14 +307,16 @@ public async Task AfterScenario()
 
 **Actualizar selectores centralmente:**
 ```csharp
-// ✅ BIEN - Un solo lugar
-public static class LoginPageLocators
+// ✅ BIEN - Un solo lugar: el target vive en su PageObject con nombre humano
+public sealed class LoginPage : PageObject
 {
-    public const string UsernameInput = "[name='username']";
+    public static readonly LoginPage Instance = new();
+    public override string Name => "Login";
+    public ITarget UsernameInput => ByLabel("usuario", "Usuario", "Credencial de acceso");
 }
 
-// Usar en todos lados
-Enter.TheText("user").Into(LoginPageLocators.UsernameInput);
+// Usar en todos lados (nunca el selector crudo)
+Enter.TheText("user").Into(LoginPage.Instance.UsernameInput);
 ```
 
 **Documentar cambios:**

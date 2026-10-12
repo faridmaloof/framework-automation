@@ -12,39 +12,33 @@ namespace Framework.Core.Exceptions;
 /// selector. The technical details (selector, Playwright timeout) are kept
 /// in <see cref="Exception.InnerException"/> for debugging and traces.
 /// </summary>
-public class TargetFailedException : FrameworkException
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TargetFailedException"/> class.
-    /// </summary>
-    /// <param name="actorName">Name of the actor that attempted the action.</param>
-    /// <param name="action">Human-readable verb/intent (click, fill in, read...).</param>
-    /// <param name="target">The target that could not be used.</param>
-    /// <param name="innerException">The technical exception (timeout, Playwright error...).</param>
-    public TargetFailedException(string actorName, string action, ITarget target, Exception innerException)
-        : base(BuildMessage(actorName, action, target), innerException)
-    {
-        ActorName = actorName;
-        Action = action;
-        TargetName = target.Name;
-        Location = target.Location;
-        Selector = target.Selector;
-    }
+/// <remarks>
+/// Initializes a new instance of the <see cref="TargetFailedException"/> class.
+/// </remarks>
+/// <param name="actorName">Name of the actor that attempted the action.</param>
+/// <param name="action">Human-readable verb/intent (click, fill in, read...).</param>
+/// <param name="target">The target that could not be used.</param>
+/// <param name="innerException">The technical exception (timeout, Playwright error...).</param>
+public class TargetFailedException(string actorName,
+                                   string action,
+                                   ITarget target,
+                                   Exception innerException) 
+    : FrameworkException(BuildMessage(actorName, action, target), innerException) {
 
     /// <summary>Name of the actor that attempted the action.</summary>
-    public string ActorName { get; }
+    public string ActorName { get; } = actorName;
 
     /// <summary>Human-readable verb/intent of the action.</summary>
-    public string Action { get; }
+    public string Action { get; } = action;
 
     /// <summary>Human-readable name of the target.</summary>
-    public string TargetName { get; }
+    public string TargetName { get; } = target.Name;
 
     /// <summary>Human-readable location (component path + page).</summary>
-    public string Location { get; }
+    public string Location { get; } = target.Location;
 
     /// <summary>Raw selector — technical detail for debugging only.</summary>
-    public string Selector { get; }
+    public string Selector { get; } = target.Selector;
 
     private static string BuildMessage(string actorName, string action, ITarget target)
     {

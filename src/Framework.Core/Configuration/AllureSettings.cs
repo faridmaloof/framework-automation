@@ -18,7 +18,10 @@ public class AllureSettings
     public string ProjectName { get; set; } = "Enterprise Automation Framework";
     
     /// <summary>
-    /// Gets or sets whether to auto-open the Allure report after test execution.
+    /// Gets or sets whether to open the report at the end of the run with the
+    /// Allure CLI: <c>allure open allure-report</c> when the HTML was generated
+    /// (<see cref="ReportingSettings.GenerateReport"/> = OnceAtEnd), otherwise
+    /// <c>allure serve {results}</c>. The server window is left running.
     /// Default: false
     /// </summary>
     public bool AutoOpenReport { get; set; } = false;

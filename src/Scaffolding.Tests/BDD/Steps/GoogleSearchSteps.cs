@@ -43,12 +43,17 @@ public class GoogleSearchSteps(ScenarioContext scenarioContext)
 
     /// <summary>
     /// Step: Then the search should execute without errors.
-    /// Validation lives in the reusable Ensure* task.
+    /// Asserts the real results container rendered. A bot-verification / CAPTCHA
+    /// page ("verify you are human") has no results, so the scenario fails
+    /// honestly instead of passing on a URL-only check that a blocked page can
+    /// still satisfy.
     /// </summary>
     [Then("the search should execute without errors")]
     public Task ThenTheSearchShouldExecuteWithoutErrors()
         => Actor.AttemptsToAsync(
-            EnsureUrlContains.Text("/search", "the search must land on a results URL"));
+            EnsureVisible.Of(GoogleSearchResultsPage.Instance.ResultsContainer,
+                "real search results (#search) must render — if Google returned a bot-verification " +
+                "('verify you are human' / CAPTCHA) page, the search did not actually execute"));
 
     /// <summary>
     /// Step: Then I should see search results.

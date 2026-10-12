@@ -26,19 +26,17 @@ namespace Framework.Core.ScreenPlay.Pages;
 /// }
 /// </code>
 /// </summary>
-public abstract class Component
+/// <remarks>
+/// Initializes a new instance of the <see cref="Component"/> class.
+/// </remarks>
+/// <param name="root">The target that identifies the component's root element.</param>
+public abstract class Component(ITarget root)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Component"/> class.
-    /// </summary>
-    /// <param name="root">The target that identifies the component's root element.</param>
-    protected Component(ITarget root)
-        => Root = root ?? throw new ArgumentNullException(nameof(root));
 
     /// <summary>
     /// The target identifying the component's root element in the DOM.
     /// </summary>
-    public ITarget Root { get; }
+    public ITarget Root { get; } = root ?? throw new ArgumentNullException(nameof(root));
 
     /// <summary>
     /// Human-readable component name. Defaults to the root target's name.

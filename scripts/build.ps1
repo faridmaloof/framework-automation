@@ -11,7 +11,7 @@ param(
     
     [switch]$SkipTests,
     
-    [string]$Solution = 'src/Framework.Automation.slnx'
+    [string]$Solution = 'src/Framework.Automation.sln'
 )
 
 $ErrorActionPreference = 'Stop'

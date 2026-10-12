@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Framework.Core.ScreenPlay.Api.Tasks;
 using Framework.Core.ScreenPlay.Interfaces;
 

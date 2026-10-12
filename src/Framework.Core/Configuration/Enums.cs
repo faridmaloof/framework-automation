@@ -1,6 +1,60 @@
 namespace Framework.Core.Configuration;
 
 /// <summary>
+/// How run history is stored on disk.
+/// </summary>
+public enum HistoryMode
+{
+    /// <summary>
+    /// Append every execution to the SAME history file (default). Best for
+    /// trend/flaky analysis across runs.
+    /// </summary>
+    Shared = 0,
+
+    /// <summary>
+    /// Give every execution its OWN history file/folder (keyed by the run id),
+    /// so previous runs are never overwritten or mixed (spec §10.2).
+    /// </summary>
+    PerRun = 1,
+}
+
+/// <summary>
+/// How the Allure results of consecutive executions are accumulated, so a test
+/// executed twice (or 20 tests per run, re-run 30 minutes later) keeps the
+/// previous result visible as history/trend instead of being overwritten.
+/// </summary>
+public enum AllureHistoryMode
+{
+    /// <summary>
+    /// Overwrite: each execution replaces the previous results (old behaviour).
+    /// Only the last run is visible. Default for backwards compatibility.
+    /// </summary>
+    Overwrite = 0,
+
+    /// <summary>
+    /// Per-run folders + cumulative rollup (recommended): every execution writes
+    /// to <c>{results}/{runId}/</c> AND to a cumulative <c>{results}/latest/</c>
+    /// folder; the HTML report is generated from <c>latest/</c> with the previous
+    /// report's <c>history/</c> copied in, so Allure renders trends, retries and
+    /// duration charts across runs. Per-run folders are never deleted, so any
+    /// past execution can be re-opened individually.
+    /// </summary>
+    Cumulative = 1,
+}
+
+/// <summary>
+/// When (and whether) the Allure HTML report is produced at the end of a run.
+/// </summary>
+public enum ReportGeneration
+{
+    /// <summary>Do not generate a report.</summary>
+    None = 0,
+
+    /// <summary>Generate the report once, at the end of the whole run.</summary>
+    OnceAtEnd = 1,
+}
+
+/// <summary>
 /// Browser type enumeration with full support for all major browsers.
 /// </summary>
 public enum BrowserType

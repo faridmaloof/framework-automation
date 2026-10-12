@@ -35,14 +35,32 @@ public class Actor(string name) : IActor, IDisposable
         _abilities.AddOrUpdate(typeof(TAbility), ability, (_, _) => ability);
     }
 
+    /// <summary>
+    /// Grants an ability using its <b>runtime</b> type as the lookup key.
+    /// <para>
+    /// Unlike the generic <c>WhoCan&lt;TAbility&gt;</c> overload (which keys on
+    /// the statically inferred ability type), this registers the ability under its
+    /// concrete runtime type. Callers that only hold the <see cref="IAbility"/>
+    /// interface — such as <see cref="ActorBuilder"/> iterating a
+    /// <c>List&lt;IAbility&gt;</c> — therefore produce actors whose abilities
+    /// still resolve via <see cref="AbilityTo{TAbility}"/> with the concrete
+    /// ability type (e.g. <c>CallAnApi</c>, <c>BrowseTheWeb</c>).
+    /// </para>
+    /// </summary>
+    /// <param name="ability">The ability instance (its runtime type is the key).</param>
+    public void WhoCan(IAbility ability)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(ability);
+        _abilities.AddOrUpdate(ability.GetType(), ability, (_, _) => ability);
+    }
+
     /// <inheritdoc/>
     public TAbility AbilityTo<TAbility>() where TAbility : IAbility
     {
         ThrowIfDisposed();
         if (_abilities.TryGetValue(typeof(TAbility), out var ability))
-        {
             return (TAbility)ability;
-        }
         throw new AbilityNotFoundException(typeof(TAbility).Name, _name);
     }
 
@@ -89,7 +107,7 @@ public class Actor(string name) : IActor, IDisposable
     public async Task<TResult> AsksForAsync<TResult>(IQuestion<TResult> question)
     {
         ThrowIfDisposed();
-        if (question == null) throw new ArgumentNullException(nameof(question));
+        ArgumentNullException.ThrowIfNull(question);
         try
         {
             return await question.AnsweredByAsync(this);

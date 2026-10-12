@@ -4,7 +4,7 @@
 
 TARGET="${1:-all}"
 CONFIGURATION="${2:-Release}"
-SOLUTION="src/Framework.Automation.slnx"
+SOLUTION="src/Framework.Automation.sln"
 
 set -e
 
