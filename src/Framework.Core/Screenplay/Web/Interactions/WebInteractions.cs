@@ -19,8 +19,7 @@ namespace Framework.Core.ScreenPlay.Web.Interactions;
 /// <remarks>
 /// Use the fluent factory <see cref="On(ITarget)"/> or <see cref="On(string)"/>.
 /// </remarks>
-public sealed class Click : ScreenInteraction
-{
+public sealed class Click : ScreenInteraction {
     private readonly ITarget _target;
     private readonly string? _fallbackSelector;
     private readonly string? _fallbackStrategy;
@@ -31,8 +30,7 @@ public sealed class Click : ScreenInteraction
     /// <param name="target">The target element to click.</param>
     /// <param name="fallbackSelector">The fallback selector to use if the target is not found.</param>
     /// <param name="fallbackStrategy">The fallback strategy to use if the target is not found.</param>
-    private Click(ITarget target, string? fallbackSelector = null, string? fallbackStrategy = null)
-    {
+    private Click(ITarget target, string? fallbackSelector = null, string? fallbackStrategy = null) {
         _target = target;
         _fallbackSelector = fallbackSelector;
         _fallbackStrategy = fallbackStrategy;
@@ -43,8 +41,7 @@ public sealed class Click : ScreenInteraction
     /// </summary>
     /// <param name="selector">The selector to use.</param>
     /// <param name="strategy">The strategy to use.</param>
-    private Click(string selector, string? strategy = null)
-    {
+    private Click(string selector, string? strategy = null) {
         // Ad-hoc target: the selector IS the only available name, so it is used
         // as the human reference too. Prefer On(ITarget) with targets from a PageObject.
         _target = Target.Css(selector, selector, description: "");
@@ -71,8 +68,7 @@ public sealed class Click : ScreenInteraction
 /// <summary>
 /// Clears an input element before typing (Playwright's <c>fill</c> semantics).
 /// </summary>
-public sealed class Clear : ScreenInteraction
-{
+public sealed class Clear : ScreenInteraction {
     private readonly ITarget _target;
 
     private Clear(ITarget target) => _target = target;
@@ -94,8 +90,7 @@ public sealed class Clear : ScreenInteraction
 /// and finally execute with <see cref="Now()"/> or by handing the
 /// interaction to the actor via <c>AttemptsToAsync</c>.
 /// </summary>
-public sealed class Enter : ScreenInteraction
-{
+public sealed class Enter : ScreenInteraction {
     private readonly string _text;
     private ITarget? _target;
 
@@ -115,8 +110,7 @@ public sealed class Enter : ScreenInteraction
     public static Enter TheText(string text) => new(text);
 
     /// <summary>Bind the typed destination target.</summary>
-    public Enter Into(ITarget target)
-    {
+    public Enter Into(ITarget target) {
         _target = target;
         return this;
     }
@@ -125,8 +119,7 @@ public sealed class Enter : ScreenInteraction
     /// Terminal operator — yields the configured interaction so it can be
     /// passed to <c>Actor.AttemptsToAsync(...)</c>.
     /// </summary>
-    public Enter Now()
-    {
+    public Enter Now() {
         if (_target is null)
             throw new InvalidOperationException(
                 "Enter requires a target — call Into(target) before Now().");
@@ -134,13 +127,10 @@ public sealed class Enter : ScreenInteraction
     }
 
     /// <inheritdoc/>
-    public override async Task PerformAsAsync(IActor actor)
-    {
+    public override async Task PerformAsAsync(IActor actor) {
         if (_target is null)
-        {
             throw new InvalidOperationException(
                 "Enter requires a target — call Into(target) before performing.");
-        }
         await TargetGuard.PerformAsync(actor, _target, "fill in", locator => locator.FillAsync(_text));
     }
 }
@@ -148,8 +138,7 @@ public sealed class Enter : ScreenInteraction
 /// <summary>
 /// Presses a key on the resolved element (defaults to <c>Enter</c>).
 /// </summary>
-public sealed class PressKey : ScreenInteraction
-{
+public sealed class PressKey : ScreenInteraction {
     private readonly ITarget _target;
     private readonly string _key;
 
@@ -158,8 +147,7 @@ public sealed class PressKey : ScreenInteraction
     /// </summary>
     /// <param name="target">The target element to press the key on.</param>
     /// <param name="key">The key to press.</param>
-    private PressKey(ITarget target, string key)
-    {
+    private PressKey(ITarget target, string key) {
         _target = target;
         _key = key;
     }
@@ -182,8 +170,7 @@ public sealed class PressKey : ScreenInteraction
 /// <summary>
 /// Hovers over the resolved element.
 /// </summary>
-public sealed class Hover : ScreenInteraction
-{
+public sealed class Hover : ScreenInteraction {
     private readonly ITarget _target;
 
     /// <summary>
@@ -206,8 +193,7 @@ public sealed class Hover : ScreenInteraction
 /// <summary>
 /// Waits for the resolved element to reach the configured Playwright state.
 /// </summary>
-public sealed class WaitFor : ScreenInteraction
-{
+public sealed class WaitFor : ScreenInteraction {
     private readonly ITarget _target;
     private readonly WaitForSelectorState _state;
 
@@ -216,8 +202,7 @@ public sealed class WaitFor : ScreenInteraction
     /// </summary>
     /// <param name="target">The target element to wait for.</param>
     /// <param name="state">The state to wait for.</param>
-    private WaitFor(ITarget target, WaitForSelectorState state)
-    {
+    private WaitFor(ITarget target, WaitForSelectorState state) {
         _target = target;
         _state = state;
     }

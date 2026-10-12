@@ -8,8 +8,7 @@ namespace Framework.Core.ScreenPlay.Api.Tasks;
 /// Memory keys used by API tasks to communicate with API questions.
 /// Strongly-typed and centralised so callers never hard-code magic strings.
 /// </summary>
-public static class ApiMemoryKeys
-{
+public static class ApiMemoryKeys {
     /// <summary>Last HTTP status code (int).</summary>
     public const string LastStatusCode = "api.last.status";
 
@@ -36,10 +35,8 @@ public static class ApiMemoryKeys
 /// <summary>Shared helper that stores the last-response evidence in the actor's
 /// memory (status, body, headers, request line and elapsed time) and bumps the
 /// monotonic request counter.</summary>
-internal static class ApiMemory
-{
-    public static void RememberExchange(IActor actor, string requestLine, string? requestBody, RestResponse response, long elapsedMs)
-    {
+internal static class ApiMemory {
+    public static void RememberExchange(IActor actor, string requestLine, string? requestBody, RestResponse response, long elapsedMs) {
         actor.Remember(ApiMemoryKeys.LastRequest, requestLine);
         actor.Remember(ApiMemoryKeys.LastRequestBody, requestBody ?? string.Empty);
         actor.Remember(ApiMemoryKeys.LastElapsedMs, elapsedMs);
@@ -58,8 +55,7 @@ internal static class ApiMemory
 /// Sends an HTTP GET to the configured endpoint and stores the response
 /// in the actor's memory for later inspection by API questions.
 /// </summary>
-public sealed class GetResource : ScreenTask
-{
+public sealed class GetResource : ScreenTask {
     private readonly string _endpoint;
 
     private GetResource(string endpoint) => _endpoint = endpoint;
@@ -74,8 +70,7 @@ public sealed class GetResource : ScreenTask
     public static GetResource From(string endpoint) => new(endpoint);
 
     /// <inheritdoc/>
-    public override async Task PerformAsAsync(IActor actor)
-    {
+    public override async Task PerformAsAsync(IActor actor) {
         var api = actor.AbilityTo<CallAnApi>();
         var request = new RestRequest(_endpoint, Method.Get);
         var sw = System.Diagnostics.Stopwatch.StartNew();
@@ -89,8 +84,7 @@ public sealed class GetResource : ScreenTask
 /// Sends an HTTP POST to the configured endpoint with a JSON body.
 /// Stores the response in the actor's memory.
 /// </summary>
-public sealed class PostResource : ScreenTask
-{
+public sealed class PostResource : ScreenTask {
     private readonly string _endpoint;
     private readonly string _jsonBody;
 
@@ -99,8 +93,7 @@ public sealed class PostResource : ScreenTask
     /// </summary>
     /// <param name="endpoint">The endpoint to send the POST request to.</param>
     /// <param name="jsonBody">The JSON body of the request.</param>
-    private PostResource(string endpoint, string jsonBody)
-    {
+    private PostResource(string endpoint, string jsonBody) {
         _endpoint = endpoint;
         _jsonBody = jsonBody;
     }
@@ -115,8 +108,7 @@ public sealed class PostResource : ScreenTask
     public static PostResource To(string endpoint, string jsonBody) => new(endpoint, jsonBody);
 
     /// <inheritdoc/>
-    public override async Task PerformAsAsync(IActor actor)
-    {
+    public override async Task PerformAsAsync(IActor actor) {
         var api = actor.AbilityTo<CallAnApi>();
         var request = new RestRequest(_endpoint, Method.Post)
             .AddStringBody(_jsonBody, DataFormat.Json);

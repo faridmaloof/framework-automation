@@ -10,8 +10,7 @@ namespace Framework.Core.ScreenPlay.Api.Tasks;
 // =====================================================================
 
 /// <summary>Ensures the last API response status is 2xx.</summary>
-public sealed class EnsureStatusSuccessful : ScreenTask
-{
+public sealed class EnsureStatusSuccessful : ScreenTask {
     private readonly string _because;
     private EnsureStatusSuccessful(string because) => _because = because;
 
@@ -27,16 +26,14 @@ public sealed class EnsureStatusSuccessful : ScreenTask
         => new(because);
 
     /// <inheritdoc/>
-    public override async Task PerformAsAsync(IActor actor)
-    {
+    public override async Task PerformAsAsync(IActor actor) {
         var ok = await actor.AsksForAsync(StatusIsSuccessful.Value());
         ok.Should().BeTrue(_because);
     }
 }
 
 /// <summary>Ensures the last response body is a JSON array.</summary>
-public sealed class EnsureBodyIsArray : ScreenTask
-{
+public sealed class EnsureBodyIsArray : ScreenTask {
     private readonly string _because;
     private EnsureBodyIsArray(string because) => _because = because;
 
@@ -52,16 +49,14 @@ public sealed class EnsureBodyIsArray : ScreenTask
         => new(because);
 
     /// <inheritdoc/>
-    public override async Task PerformAsAsync(IActor actor)
-    {
+    public override async Task PerformAsAsync(IActor actor) {
         var ok = await actor.AsksForAsync(BodyIsArray.Value());
         ok.Should().BeTrue(_because);
     }
 }
 
 /// <summary>Ensures the last response body is a JSON object.</summary>
-public sealed class EnsureBodyIsObject : ScreenTask
-{
+public sealed class EnsureBodyIsObject : ScreenTask {
     private readonly string _because;
     private EnsureBodyIsObject(string because) => _because = because;
 
@@ -77,20 +72,17 @@ public sealed class EnsureBodyIsObject : ScreenTask
         => new(because);
 
     /// <inheritdoc/>
-    public override async Task PerformAsAsync(IActor actor)
-    {
+    public override async Task PerformAsAsync(IActor actor) {
         var ok = await actor.AsksForAsync(BodyIsObject.Value());
         ok.Should().BeTrue(_because);
     }
 }
 
 /// <summary>Ensures the last response body contains the given field name.</summary>
-public sealed class EnsureBodyContainsField : ScreenTask
-{
+public sealed class EnsureBodyContainsField : ScreenTask {
     private readonly string _fieldName;
     private readonly string _because;
-    private EnsureBodyContainsField(string fieldName, string because)
-    {
+    private EnsureBodyContainsField(string fieldName, string because) {
         _fieldName = fieldName;
         _because = because;
     }
@@ -107,16 +99,14 @@ public sealed class EnsureBodyContainsField : ScreenTask
         => new(fieldName, because);
 
     /// <inheritdoc/>
-    public override async Task PerformAsAsync(IActor actor)
-    {
+    public override async Task PerformAsAsync(IActor actor) {
         var ok = await actor.AsksForAsync(BodyContainsField.Named(_fieldName));
         ok.Should().BeTrue(_because);
     }
 }
 
 /// <summary>Ensures the last response body is valid JSON (object or array).</summary>
-public sealed class EnsureBodyIsValidJson : ScreenTask
-{
+public sealed class EnsureBodyIsValidJson : ScreenTask {
     private readonly string _because;
     private EnsureBodyIsValidJson(string because) => _because = because;
 
@@ -132,8 +122,7 @@ public sealed class EnsureBodyIsValidJson : ScreenTask
         => new(because);
 
     /// <inheritdoc/>
-    public override async Task PerformAsAsync(IActor actor)
-    {
+    public override async Task PerformAsAsync(IActor actor) {
         var ok = await actor.AsksForAsync(BodyIsValidJson.Value());
         ok.Should().BeTrue(_because);
     }

@@ -9,8 +9,7 @@ namespace Framework.Core.BDD;
 /// No static state: every lookup reads the current scenario's context, so
 /// parallel scenarios never share or leak actors.
 /// </summary>
-public static class ScenarioActor
-{
+public static class ScenarioActor {
     /// <summary>
     /// Gets the primary actor from the scenario context.
     /// Throws if the actor is not initialized (BeforeScenario hook must run first).

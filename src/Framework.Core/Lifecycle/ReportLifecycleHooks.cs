@@ -11,8 +11,7 @@ namespace Framework.Core.Lifecycle;
 /// the run, so every step is best-effort.
 /// </summary>
 [Binding]
-public sealed class ReportLifecycleHooks
-{
+public sealed class ReportLifecycleHooks {
     /// <summary>
     /// Runs once at the very end of the test run: generates the report per
     /// <see cref="ReportingSettings.GenerateReport"/> and, if

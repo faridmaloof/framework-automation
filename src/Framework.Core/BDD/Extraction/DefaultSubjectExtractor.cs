@@ -24,8 +24,7 @@ namespace Framework.Core.BDD.Extraction;
 /// extractor is stateless w.r.t. them and re-reads on each call, so runtime
 /// registrations are honoured safely.
 /// </param>
-public sealed partial class DefaultSubjectExtractor(Func<IEnumerable<string>> knownSubjectsProvider) : ISubjectExtractor
-{
+public sealed partial class DefaultSubjectExtractor(Func<IEnumerable<string>> knownSubjectsProvider) : ISubjectExtractor {
     // Auxiliary / modal words. This is a small, language-level CLOSED set that
     // marks the end of a noun phrase in English Gherkin ("is", "should",
     // "will"...). It is intentionally NOT an open-ended list of business verbs.

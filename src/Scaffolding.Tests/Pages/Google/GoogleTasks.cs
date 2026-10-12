@@ -17,8 +17,7 @@ namespace Scaffolding.Tests.Pages.Google;
 /// with <c>Enter</c>, then waits for navigation to settle so follow-up
 /// URL/state questions observe the final page.
 /// </summary>
-public sealed class SearchFor : ScreenTask
-{
+public sealed class SearchFor : ScreenTask {
     private readonly string _query;
 
     /// <summary>

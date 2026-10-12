@@ -36,8 +36,7 @@ public class ClickButton : Task { }
 **Componer Tasks de Interactions sobre targets del PageObject:**
 ```csharp
 // ✅ BIEN — los selectores viven solo en LoginPage
-public class LoginToApp : ScreenTask
-{
+public class LoginToApp : ScreenTask {
     public override async Task PerformAsAsync(IActor actor)
     {
         await actor.AttemptsToAsync(
@@ -49,8 +48,7 @@ public class LoginToApp : ScreenTask
 }
 
 // ❌ MAL — selectores crudos repartidos por el código
-public class LoginToApp : ScreenTask
-{
+public class LoginToApp : ScreenTask {
     public override async Task PerformAsAsync(IActor actor)
     {
         await actor.AttemptsToAsync(
@@ -93,8 +91,7 @@ title.Should().Contain("Google");
 **Declarar los locators de la página en su PageObject, con nombre humano:**
 ```csharp
 // ✅ BIEN — nombre humano + selector + descripción, en un solo lugar
-public sealed class LoginPage : PageObject
-{
+public sealed class LoginPage : PageObject {
     public static readonly LoginPage Instance = new();
     public override string Name => "Login";
     public override string Url => "/login";
@@ -103,8 +100,7 @@ public sealed class LoginPage : PageObject
 }
 
 // ❌ MAL — selectores como constantes sueltas sin contexto ni página
-public static class LoginPageLocators
-{
+public static class LoginPageLocators {
     public const string UsernameInput = "[name='username']";
 }
 ```
@@ -121,8 +117,7 @@ public Target SubmitButton => Css("botón ingresar", "button:nth-child(3) > div 
 **Modelar bloques reutilizables como Component:**
 ```csharp
 // ✅ BIEN — un header compartido por N páginas se declara una sola vez
-public sealed class SiteHeader : Component
-{
+public sealed class SiteHeader : Component {
     public static readonly SiteHeader Instance =
         new(Target.Css("cabecera", "header[role='banner']"));
 
@@ -219,8 +214,7 @@ appsettings.Production.json      # Prod
 
 **Validar configuración:**
 ```csharp
-public class FrameworkSettingsValidator
-{
+public class FrameworkSettingsValidator {
     public FrameworkSettingsValidator()
     {
         RuleFor(x => x.Environment).NotEmpty();
@@ -246,16 +240,14 @@ public class FrameworkSettingsValidator
 ```csharp
 // ✅ BIEN - Cada test es independiente
 [Scenario]
-public async Task Test1()
-{
+public async Task Test1() {
     // Setup propio
     // Test
     // Cleanup
 }
 
 [Scenario]
-public async Task Test2()
-{
+public async Task Test2() {
     // Setup propio (no depende de Test1)
     // Test
     // Cleanup
@@ -271,8 +263,7 @@ var user = UserBuilder.Valid()
     .Build();
 
 // ❌ MAL
-var user = new User
-{
+var user = new User {
     Username = "test",
     Email = "test@example.com",
     Password = "pass123",
@@ -284,8 +275,7 @@ var user = new User
 **Limpiar después de cada test:**
 ```csharp
 [AfterScenario]
-public async Task AfterScenario()
-{
+public async Task AfterScenario() {
     // Cerrar browser
     // Limpiar datos
     // Resetear estado
@@ -308,8 +298,7 @@ public async Task AfterScenario()
 **Actualizar selectores centralmente:**
 ```csharp
 // ✅ BIEN - Un solo lugar: el target vive en su PageObject con nombre humano
-public sealed class LoginPage : PageObject
-{
+public sealed class LoginPage : PageObject {
     public static readonly LoginPage Instance = new();
     public override string Name => "Login";
     public ITarget UsernameInput => ByLabel("usuario", "Usuario", "Credencial de acceso");

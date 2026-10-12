@@ -12,8 +12,7 @@ namespace Framework.Core.ScreenPlay.Tasks;
 /// </remarks>
 /// <param name="url">The URL to navigate to.</param>
 /// <param name="waitFor">Optional wait condition.</param>
-public class NavigateToUrl(string url, string? waitFor = null) : ScreenTask
-{
+public class NavigateToUrl(string url, string? waitFor = null) : ScreenTask {
     private readonly string _url = url;
     private readonly string? _waitFor = waitFor;
 
@@ -21,11 +20,9 @@ public class NavigateToUrl(string url, string? waitFor = null) : ScreenTask
     public override string TaskName => $"Navigate to {_url}";
 
     /// <inheritdoc/>
-    public override async System.Threading.Tasks.Task PerformAsAsync(IActor actor)
-    {
+    public override async System.Threading.Tasks.Task PerformAsAsync(IActor actor) {
         var web = actor.AbilityTo<BrowseTheWeb>();
-        var waitUntil = _waitFor?.ToLowerInvariant() switch
-        {
+        var waitUntil = _waitFor?.ToLowerInvariant() switch {
             "networkidle" => WaitUntilState.NetworkIdle,
             "domcontentloaded" => WaitUntilState.DOMContentLoaded,
             _ => WaitUntilState.Load

@@ -40,8 +40,7 @@ public class TargetFailedException(string actorName,
     /// <summary>Raw selector — technical detail for debugging only.</summary>
     public string Selector { get; } = target.Selector;
 
-    private static string BuildMessage(string actorName, string action, ITarget target)
-    {
+    private static string BuildMessage(string actorName, string action, ITarget target) {
         var where = string.IsNullOrEmpty(target.Location) ? string.Empty : $" ({target.Location})";
         return $"'{actorName}' could not {action} '{target.Name}'{where}: " +
                "the element was not found or not ready before the timeout.";

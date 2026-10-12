@@ -16,8 +16,7 @@ namespace Scaffolding.Tests.BDD.Steps;
 /// </remarks>
 /// <param name="scenarioContext">The scenario context.</param>
 [Binding]
-public class GoogleSearchSteps(ScenarioContext scenarioContext)
-{
+public class GoogleSearchSteps(ScenarioContext scenarioContext) {
     private readonly ScenarioContext _scenarioContext = scenarioContext;
 
     /// <summary>

@@ -5,8 +5,7 @@ namespace Framework.Core.Tools.Database;
 /// <summary>
 /// MongoDB NoSQL database connection.
 /// </summary>
-public class MongoDbConnection : IDisposable
-{
+public class MongoDbConnection : IDisposable {
     private readonly IMongoClient _client;
     private readonly IMongoDatabase _database;
     private bool _disposed;
@@ -112,8 +111,7 @@ public class MongoDbConnection : IDisposable
 /// <summary>
 /// MongoDB insert result.
 /// </summary>
-public class InsertOneResult
-{
+public class InsertOneResult {
     /// <summary>
     /// Gets or sets whether the operation was acknowledged.
     /// </summary>

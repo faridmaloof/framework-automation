@@ -18,8 +18,7 @@ namespace Framework.Core.Lifecycle;
 /// concurrently and only one browser is ever created.
 /// </para>
 /// </summary>
-public sealed class BrowserSessionManager
-{
+public sealed class BrowserSessionManager {
     /// <summary>
     /// The singleton instance of <see cref="BrowserSessionManager"/>. It is created lazily on first access to ensure that the browser is only launched when needed.
     /// </summary>
@@ -71,10 +70,12 @@ public sealed class BrowserSessionManager
             var chromium = device.Browser is not (Configuration.BrowserType.Firefox
                 or Configuration.BrowserType.WebKit
                 or Configuration.BrowserType.Safari);
-            _browser = await engine.LaunchAsync(new BrowserTypeLaunchOptions {
+            var launchOptions = new BrowserTypeLaunchOptions {
                 Headless = device.Headless,
                 Args = chromium ? ["--disable-blink-features=AutomationControlled"] : [],
-            });
+            };
+            BrowserOptionsHook.ConfigureLaunch?.Invoke(launchOptions);
+            _browser = await engine.LaunchAsync(launchOptions);
             return _browser;
         }
         finally

@@ -4,6 +4,4 @@ namespace Framework.Core.ScreenPlay.Interfaces;
 /// Represents a technical-level interaction with the system.
 /// Interactions are atomic actions like clicking or typing.
 /// </summary>
-public interface IInteraction : IAction
-{
-}
+public interface IInteraction : IAction { }

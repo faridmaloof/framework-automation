@@ -3,13 +3,25 @@ namespace Framework.Core.Configuration;
 /// <summary>
 /// Allure reporting configuration.
 /// </summary>
-public class AllureSettings
-{
+public class AllureSettings {
+    private string _resultsDirectory = "allure-results";
+
     /// <summary>
-    /// Gets or sets the Allure results directory.
+    /// Gets or sets the Allure results directory. Supports relative and absolute paths.
+    /// In CI pipelines, can also be supplied via the ALLURE_RESULTS_DIR environment variable.
     /// Default: allure-results
     /// </summary>
-    public string ResultsDirectory { get; set; } = "allure-results";
+    public string ResultsDirectory
+    {
+        get
+        {
+            var env = Environment.GetEnvironmentVariable("ALLURE_RESULTS_DIR");
+            return !string.IsNullOrWhiteSpace(env) && _resultsDirectory == "allure-results"
+                ? env
+                : _resultsDirectory;
+        }
+        set => _resultsDirectory = value;
+    }
     
     /// <summary>
     /// Gets or sets the project name.

@@ -16,8 +16,7 @@ namespace Framework.Core.ScreenPlay.Locators;
 /// a person can act on. The original engine error is preserved as the
 /// inner exception (traces, Allure and logs still get the technical detail).
 /// </summary>
-public static class TargetGuard
-{
+public static class TargetGuard {
     /// <summary>
     /// Performs an operation over the resolved target on behalf of the actor.
     /// </summary>
@@ -28,23 +27,19 @@ public static class TargetGuard
     /// <exception cref="TargetFailedException">
     /// The element was not found / not ready before the timeout.
     /// </exception>
-    public static async Task PerformAsync(
-        IActor actor,
-        ITarget target,
-        string action,
-        Func<ILocator, Task> operation)
-    {
+    public static async Task PerformAsync(IActor actor,
+                                          ITarget target,
+                                          string action,
+                                          Func<ILocator, Task> operation) {
         ArgumentNullException.ThrowIfNull(actor);
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(operation);
 
-        try
-        {
+        try {
             var page = actor.AbilityTo<BrowseTheWeb>().Page;
             await operation(target.Resolve(page));
         }
-        catch (TimeoutException ex)
-        {
+        catch (TimeoutException ex) {
             throw new TargetFailedException(actor.Name, action, target, ex);
         }
     }
@@ -61,23 +56,19 @@ public static class TargetGuard
     /// <exception cref="TargetFailedException">
     /// The element was not found / not ready before the timeout.
     /// </exception>
-    public static async Task<TResult> AnswerAsync<TResult>(
-        IActor actor,
-        ITarget target,
-        string action,
-        Func<ILocator, Task<TResult>> query)
-    {
+    public static async Task<TResult> AnswerAsync<TResult>(IActor actor,
+                                                           ITarget target,
+                                                           string action,
+                                                           Func<ILocator, Task<TResult>> query) {
         ArgumentNullException.ThrowIfNull(actor);
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(query);
 
-        try
-        {
+        try {
             var page = actor.AbilityTo<BrowseTheWeb>().Page;
             return await query(target.Resolve(page));
         }
-        catch (TimeoutException ex)
-        {
+        catch (TimeoutException ex) {
             throw new TargetFailedException(actor.Name, action, target, ex);
         }
     }

@@ -3,8 +3,7 @@ namespace Framework.Core.Configuration;
 /// <summary>
 /// Timeout settings.
 /// </summary>
-public class TimeoutSettings
-{
+public class TimeoutSettings {
     /// <summary>
     /// Gets or sets the global timeout in seconds.
     /// Default: 30
@@ -27,8 +26,7 @@ public class TimeoutSettings
 /// <summary>
 /// Evidence collection settings.
 /// </summary>
-public class EvidenceSettings : IEvidenceSettings
-{
+public class EvidenceSettings : IEvidenceSettings {
     /// <summary>
     /// Gets or sets the screenshot capture mode.
     /// Default: PreAndPost
@@ -57,8 +55,7 @@ public class EvidenceSettings : IEvidenceSettings
 /// <summary>
 /// Parallelism settings.
 /// </summary>
-public class ParallelismSettings
-{
+public class ParallelismSettings {
     /// <summary>
     /// Gets or sets the maximum number of parallel workers.
     /// Default: 4
@@ -75,8 +72,7 @@ public class ParallelismSettings
 /// <summary>
 /// Device/browser settings.
 /// </summary>
-public class DeviceSettings : IDeviceSettings
-{
+public class DeviceSettings : IDeviceSettings {
     /// <summary>
     /// Gets or sets the browser type.
     /// Default: Chromium
@@ -107,8 +103,7 @@ public class DeviceSettings : IDeviceSettings
 /// Reporting settings: clear, human-friendly run output + run history +
 /// optional Allure report generation and live report server.
 /// </summary>
-public class ReportingSettings
-{
+public class ReportingSettings {
     /// <summary>
     /// Gets or sets whether every scenario result is appended to a run-history
     /// file (JSON lines) so behaviour can be tracked over time.
@@ -180,8 +175,7 @@ public class ReportingSettings
 /// Browser identity lives in <see cref="DeviceSettings"/> ("Device" section);
 /// headless mode is defined ONLY there to avoid conflicting flags.
 /// </summary>
-public class FrameworkSettings : IFrameworkSettings
-{
+public class FrameworkSettings : IFrameworkSettings {
     /// <summary>
     /// Gets or sets the environment name.
     /// Default: Development

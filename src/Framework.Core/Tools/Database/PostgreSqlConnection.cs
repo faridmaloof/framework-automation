@@ -7,8 +7,7 @@ namespace Framework.Core.Tools.Database;
 /// Initializes a new instance of the <see cref="PostgreSqlConnection"/> class.
 /// </remarks>
 /// <param name="connectionString">The PostgreSQL connection string.</param>
-public class PostgreSqlConnection(string connectionString) : DatabaseConnection(connectionString)
-{
+public class PostgreSqlConnection(string connectionString) : DatabaseConnection(connectionString) {
 
 
     /// <inheritdoc/>

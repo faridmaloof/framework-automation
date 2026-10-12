@@ -10,8 +10,7 @@ namespace Framework.Core.ScreenPlay.Api.Questions;
 // =====================================================================
 
 /// <summary>Gets the HTTP status code of the last API response.</summary>
-public sealed class StatusCode : ScreenQuestion<int>
-{
+public sealed class StatusCode : ScreenQuestion<int> {
     /// <inheritdoc/>
     public override string Description => "last HTTP status code";
 
@@ -24,8 +23,7 @@ public sealed class StatusCode : ScreenQuestion<int>
 }
 
 /// <summary>Gets the body string of the last API response.</summary>
-public sealed class ResponseBody : ScreenQuestion<string>
-{
+public sealed class ResponseBody : ScreenQuestion<string> {
     /// <inheritdoc/>
     public override string Description => "last response body";
 
@@ -38,8 +36,7 @@ public sealed class ResponseBody : ScreenQuestion<string>
 }
 
 /// <summary>Predicate: body is valid JSON (starts with <c>{</c> or <c>[</c>).</summary>
-public sealed class BodyIsValidJson : ScreenQuestion<bool>
-{
+public sealed class BodyIsValidJson : ScreenQuestion<bool> {
     /// <inheritdoc/>
     public override string Description => "response body is valid JSON";
 
@@ -47,8 +44,7 @@ public sealed class BodyIsValidJson : ScreenQuestion<bool>
     public static BodyIsValidJson Value() => new();
 
     /// <inheritdoc/>
-    public override async Task<bool> AnsweredByAsync(IActor actor)
-    {
+    public override async Task<bool> AnsweredByAsync(IActor actor) {
         var body = await actor.AsksForAsync(ResponseBody.OfLastResponse());
         return !string.IsNullOrEmpty(body)
             && (body.TrimStart().StartsWith("{") || body.TrimStart().StartsWith("["));
@@ -56,8 +52,7 @@ public sealed class BodyIsValidJson : ScreenQuestion<bool>
 }
 
 /// <summary>Predicate: body is a JSON array.</summary>
-public sealed class BodyIsArray : ScreenQuestion<bool>
-{
+public sealed class BodyIsArray : ScreenQuestion<bool> {
     /// <inheritdoc/>
     public override string Description => "response body is a JSON array";
 
@@ -65,16 +60,14 @@ public sealed class BodyIsArray : ScreenQuestion<bool>
     public static BodyIsArray Value() => new();
 
     /// <inheritdoc/>
-    public override async Task<bool> AnsweredByAsync(IActor actor)
-    {
+    public override async Task<bool> AnsweredByAsync(IActor actor) {
         var body = await actor.AsksForAsync(ResponseBody.OfLastResponse());
         return !string.IsNullOrEmpty(body) && body.TrimStart().StartsWith("[");
     }
 }
 
 /// <summary>Predicate: body is a JSON object.</summary>
-public sealed class BodyIsObject : ScreenQuestion<bool>
-{
+public sealed class BodyIsObject : ScreenQuestion<bool> {
     /// <inheritdoc/>
     public override string Description => "response body is a JSON object";
 
@@ -82,16 +75,14 @@ public sealed class BodyIsObject : ScreenQuestion<bool>
     public static BodyIsObject Value() => new();
 
     /// <inheritdoc/>
-    public override async Task<bool> AnsweredByAsync(IActor actor)
-    {
+    public override async Task<bool> AnsweredByAsync(IActor actor) {
         var body = await actor.AsksForAsync(ResponseBody.OfLastResponse());
         return !string.IsNullOrEmpty(body) && body.TrimStart().StartsWith("{");
     }
 }
 
 /// <summary>Predicate: body contains a specific field name (with quotes).</summary>
-public sealed class BodyContainsField : ScreenQuestion<bool>
-{
+public sealed class BodyContainsField : ScreenQuestion<bool> {
     private readonly string _fieldName;
 
     private BodyContainsField(string fieldName) => _fieldName = fieldName;
@@ -103,16 +94,14 @@ public sealed class BodyContainsField : ScreenQuestion<bool>
     public static BodyContainsField Named(string fieldName) => new(fieldName);
 
     /// <inheritdoc/>
-    public override async Task<bool> AnsweredByAsync(IActor actor)
-    {
+    public override async Task<bool> AnsweredByAsync(IActor actor) {
         var body = await actor.AsksForAsync(ResponseBody.OfLastResponse());
         return body.Contains($"\"{_fieldName}\"", StringComparison.Ordinal);
     }
 }
 
 /// <summary>Predicate: last HTTP status was successful (2xx).</summary>
-public sealed class StatusIsSuccessful : ScreenQuestion<bool>
-{
+public sealed class StatusIsSuccessful : ScreenQuestion<bool> {
     /// <inheritdoc/>
     public override string Description => "response status is 2xx";
 
@@ -120,8 +109,7 @@ public sealed class StatusIsSuccessful : ScreenQuestion<bool>
     public static StatusIsSuccessful Value() => new();
 
     /// <inheritdoc/>
-    public override async Task<bool> AnsweredByAsync(IActor actor)
-    {
+    public override async Task<bool> AnsweredByAsync(IActor actor) {
         var status = await actor.AsksForAsync(StatusCode.OfLastResponse());
         return status is >= 200 and < 300;
     }

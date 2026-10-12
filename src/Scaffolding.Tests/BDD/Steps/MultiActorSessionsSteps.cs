@@ -20,8 +20,7 @@ namespace Scaffolding.Tests.BDD.Steps;
 /// </remarks>
 /// <param name="scenarioContext">The scenario context.</param>
 [Binding]
-public class MultiActorSessionsSteps(ScenarioContext scenarioContext)
-{
+public class MultiActorSessionsSteps(ScenarioContext scenarioContext) {
     /// <summary>
     /// The scenario context, used to store and retrieve actors and their sessions.
     /// </summary>

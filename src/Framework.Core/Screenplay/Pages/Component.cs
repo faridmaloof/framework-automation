@@ -30,8 +30,7 @@ namespace Framework.Core.ScreenPlay.Pages;
 /// Initializes a new instance of the <see cref="Component"/> class.
 /// </remarks>
 /// <param name="root">The target that identifies the component's root element.</param>
-public abstract class Component(ITarget root)
-{
+public abstract class Component(ITarget root) {
 
     /// <summary>
     /// The target identifying the component's root element in the DOM.

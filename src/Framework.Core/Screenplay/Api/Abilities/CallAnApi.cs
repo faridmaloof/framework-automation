@@ -8,8 +8,7 @@ namespace Framework.Core.ScreenPlay.Api.Abilities;
 /// using RestSharp. The configured <see cref="RestClient"/> is owned
 /// by this ability and disposed alongside the actor.
 /// </summary>
-public sealed class CallAnApi : IAbility, IDisposable
-{
+public sealed class CallAnApi : IAbility, IDisposable {
     private readonly RestClient _client;
     private bool _disposed;
 
@@ -18,12 +17,10 @@ public sealed class CallAnApi : IAbility, IDisposable
     /// </summary>
     /// <param name="baseUrl">Base URL of the target API.</param>
     /// <param name="timeout">Request timeout (default: 30s).</param>
-    public CallAnApi(string baseUrl, TimeSpan? timeout = null)
-    {
+    public CallAnApi(string baseUrl, TimeSpan? timeout = null) {
         if (string.IsNullOrWhiteSpace(baseUrl))
             throw new ArgumentException("Base URL is required.", nameof(baseUrl));
-        var options = new RestClientOptions(baseUrl)
-        {
+        var options = new RestClientOptions(baseUrl) {
             ThrowOnAnyError = false,
             Timeout = timeout ?? TimeSpan.FromSeconds(30),
         };
@@ -37,8 +34,7 @@ public sealed class CallAnApi : IAbility, IDisposable
     public RestClient Client => _client;
 
     /// <inheritdoc/>
-    public void Dispose()
-    {
+    public void Dispose() {
         if (_disposed) return;
         _disposed = true;
         _client.Dispose();

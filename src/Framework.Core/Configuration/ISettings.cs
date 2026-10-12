@@ -5,8 +5,7 @@ namespace Framework.Core.Configuration;
 /// NOTE: headless mode is NOT part of the framework section — it belongs to
 /// <see cref="IDeviceSettings"/> (single source of truth, section "Device").
 /// </summary>
-public interface IFrameworkSettings
-{
+public interface IFrameworkSettings {
     /// <summary>
     /// Gets the environment name.
     /// </summary>
@@ -21,8 +20,7 @@ public interface IFrameworkSettings
 /// <summary>
 /// Device settings interface.
 /// </summary>
-public interface IDeviceSettings
-{
+public interface IDeviceSettings {
     /// <summary>
     /// Gets the browser type.
     /// </summary>
@@ -47,8 +45,7 @@ public interface IDeviceSettings
 /// <summary>
 /// Evidence settings interface.
 /// </summary>
-public interface IEvidenceSettings
-{
+public interface IEvidenceSettings {
     /// <summary>
     /// Gets the screenshot capture mode.
     /// </summary>

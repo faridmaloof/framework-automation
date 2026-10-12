@@ -3,8 +3,7 @@ namespace Framework.Core.ScreenPlay.Interfaces;
 /// <summary>
 /// Represents an actor in the ScreenPlay Pattern who can perform tasks and answer questions.
 /// </summary>
-public interface IActor
-{
+public interface IActor {
     /// <summary>
     /// Gets the actor's name.
     /// </summary>

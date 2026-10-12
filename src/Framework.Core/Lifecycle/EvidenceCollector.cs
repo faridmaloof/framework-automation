@@ -9,8 +9,7 @@ namespace Framework.Core.Lifecycle;
 /// or swapped without touching the test project. <see cref="WebLifecycleHooks"/>
 /// only calls <see cref="CollectAsync"/>; it decides nothing.
 /// </summary>
-public static class EvidenceCollector
-{
+public static class EvidenceCollector {
     /// <summary>
     /// Artifact paths produced for one scenario, so the caller can register
     /// them as scenario-scoped (test-level) attachments without scanning
@@ -67,14 +66,6 @@ public static class EvidenceCollector
             }
             else TryDelete(file);
         }
-
-        // Video handling: OnFailure + !failed discards the file (keeps the
-        // report lean); OnFailure + failed keeps it; Always keeps it
-        // unconditionally (not blocking the run, the browser recorded it in the
-        // background). The video path is resolved earlier (in BeforeScenario)
-        // and registered by the caller, so no scanning happens here.
-        if (settings.Video == VideoMode.OnFailure && !failed)
-            try { TryDelete(await page.Video!.PathAsync()); } catch { /* no video recorded */ }
 
         return new EvidenceArtifacts(screenshotPath, tracePath);
     }

@@ -8,8 +8,7 @@ namespace Scaffolding.Tests.Pages.Google;
 /// page identity + targets only, <b>no behaviour</b>. Behaviour lives in the
 /// page's Tasks (<see cref="SearchFor"/>), which consume these targets.
 /// </summary>
-public sealed class GoogleHomePage : PageObject
-{
+public sealed class GoogleHomePage : PageObject {
     /// <summary>Stateless page object, shared by tasks, steps and questions.</summary>
     public static readonly GoogleHomePage Instance = new();
 

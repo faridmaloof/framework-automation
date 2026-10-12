@@ -15,8 +15,7 @@ namespace Framework.Core.Lifecycle;
 /// <param name="featureContext">The per-feature feature context.</param>
 /// <param name="scenarioContext">The per-scenario scenario context.</param>
 [Binding]
-public sealed class RunHistoryHooks(FeatureContext featureContext, ScenarioContext scenarioContext)
-{
+public sealed class RunHistoryHooks(FeatureContext featureContext, ScenarioContext scenarioContext) {
     private DateTimeOffset _start;
     private readonly List<AllureReportHelper.AllureStep> _steps = [];
 
@@ -432,7 +431,11 @@ public sealed class RunHistoryHooks(FeatureContext featureContext, ScenarioConte
             foreach (var video in videoPaths) Add(video);
         else
             Add(scenarioContext.GetString("VideoPath"));
-        Add(scenarioContext.GetString("FailureScreenshotPath"));
+
+        // Only attach scenario-level failure screenshot if the failing step didn't already record one
+        if (!scenarioContext.ContainsKey("StepFailureScreenshot"))
+            Add(scenarioContext.GetString("FailureScreenshotPath"));
+
         Add(scenarioContext.GetString("TracePath"));
 
         return files;

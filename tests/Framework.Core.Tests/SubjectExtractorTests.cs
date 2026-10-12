@@ -8,8 +8,7 @@ namespace Framework.Core.Tests;
 // Shares the "ActorSubjects" xUnit collection with ActorSubjectsTests so tests
 // that swap the global extractor never run concurrently with subject lookups.
 [Collection("ActorSubjects")]
-public class SubjectExtractorTests
-{
+public class SubjectExtractorTests {
     [Fact]
     public void DefaultExtractor_ResolvesRole_WithConjugatedVerb()
     {

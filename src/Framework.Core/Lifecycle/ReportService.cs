@@ -10,8 +10,7 @@ namespace Framework.Core.Lifecycle;
 /// so nothing is scattered across the repository root.
 /// Supports both relative (e.g. "allure-results") and absolute (e.g. "D:/TestRuns") paths.
 /// </summary>
-public static class ReportService
-{
+public static class ReportService {
     /// <summary>
     /// Resolves an arbitrary path: absolute paths are used as-is; relative paths
     /// resolve from the REPO ROOT (detected by looking for .git or walk-up).

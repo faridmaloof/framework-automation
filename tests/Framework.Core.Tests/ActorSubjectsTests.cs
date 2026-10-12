@@ -9,8 +9,7 @@ namespace Framework.Core.Tests;
 // other, so both ActorSubjects test classes share one xUnit collection
 // (spec §5.6: define behaviour under simultaneous operations).
 [Collection("ActorSubjects")]
-public class ActorSubjectsTests
-{
+public class ActorSubjectsTests {
     [Theory]
     [InlineData("the user is on the Google home page", "user")]
     [InlineData("an administrator is authenticated", "administrator")]

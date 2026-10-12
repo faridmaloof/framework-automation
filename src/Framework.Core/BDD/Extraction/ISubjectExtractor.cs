@@ -12,8 +12,7 @@ namespace Framework.Core.BDD.Extraction;
 /// without touching the framework.
 /// </para>
 /// </summary>
-public interface ISubjectExtractor
-{
+public interface ISubjectExtractor {
     /// <summary>
     /// Extracts the raw subject at the start of the step, or <c>null</c> when no
     /// subject can be identified. The result is NOT canonicalized — leading

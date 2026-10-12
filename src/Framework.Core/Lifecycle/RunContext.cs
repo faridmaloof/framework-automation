@@ -7,8 +7,7 @@ namespace Framework.Core.Lifecycle;
 /// configured, isolated into their own folder/file instead of overwriting
 /// previous runs (spec §10.2).
 /// </summary>
-public static class RunContext
-{
+public static class RunContext {
     /// <summary>
     /// Gets the unique id of the current execution, lazily generated on first access.
     /// Format: yyyyMMdd-HHmmss-XXXXXXXX (UTC timestamp + 8-char GUID suffix).

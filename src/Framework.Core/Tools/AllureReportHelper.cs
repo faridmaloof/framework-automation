@@ -8,8 +8,7 @@ namespace Framework.Core.Tools;
 /// attachments + environment.properties + categories.json + executor.json)
 /// and drives the Allure CLI to generate / serve / open the HTML report.
 /// </summary>
-public static class AllureReportHelper
-{
+public static class AllureReportHelper {
     /// <summary>
     /// Executable names probed in PATH. Scoop/choco expose the CLI as
     /// <c>allure.cmd</c>/<c>allure.bat</c> on Windows and <c>allure</c> on Unix.
@@ -24,19 +23,18 @@ public static class AllureReportHelper
     /// Writes one Allure-2 test-result file for a finished scenario.
     /// Thread-safe: each scenario writes its own uuid-named file.
     /// </summary>
-    public static string WriteResult(
-        string resultsDirectory,
-        string feature,
-        string scenario,
-        bool passed,
-        long durationMs,
-        IEnumerable<string>? tags = null,
-        string? errorMessage = null,
-        string? errorTrace = null,
-        IEnumerable<string>? attachments = null,
-        IEnumerable<AllureStep>? steps = null,
-        IEnumerable<AllureCategory>? categories = null)
-    {
+    public static string WriteResult(string resultsDirectory,
+                                     string feature,
+                                     string scenario,
+                                     bool passed,
+                                     long durationMs,
+                                     IEnumerable<string>? tags = null,
+                                     string? errorMessage = null,
+                                     string? errorTrace = null,
+                                     IEnumerable<string>? attachments = null,
+                                     IEnumerable<AllureStep>? steps = null,
+                                     IEnumerable<AllureCategory>? categories = null,
+                                     string? testFramework = null) {
         Directory.CreateDirectory(resultsDirectory);
         var uuid = Guid.NewGuid().ToString("N");
         var tagList = (tags ?? []).Select(t => t.TrimStart('@')).ToArray();
@@ -44,33 +42,25 @@ public static class AllureReportHelper
         // Filter out invalid attachment paths (empty or missing files)
         var validAttachments = new List<string>();
         if (attachments is not null)
-        {
-            foreach (var file in attachments)
-            {
+            foreach (var file in attachments) {
                 if (string.IsNullOrWhiteSpace(file) || !File.Exists(file)) continue;
-                try
-                {
+                try {
                     var info = new FileInfo(file);
                     if (info.Length > 0) validAttachments.Add(file);
                 }
                 catch { /* skip unreadable file */ }
             }
-        }
 
         var attachmentEntries = new List<object>();
         if (validAttachments.Count > 0)
-        {
-            foreach (var file in validAttachments)
-            {
+            foreach (var file in validAttachments) {
                 var destName = $"{uuid}-attachment-{Path.GetFileName(file)}";
-                try
-                {
+                try {
                     File.Copy(file, Path.Combine(resultsDirectory, destName), overwrite: true);
                     attachmentEntries.Add(new { name = ResolveScenarioAttachmentName(file), source = destName, type = GuessMime(file) });
                 }
                 catch { /* attachment failure must never fail the run */ }
             }
-        }
 
         // Step attachments are copied into the results directory too, so the
         // report references them by their (uuid-prefixed) file name instead of
@@ -78,18 +68,13 @@ public static class AllureReportHelper
         // unique across steps/scenarios.
         var stepEntries = new List<object>();
         if (steps is not null)
-        {
-            foreach (var s in steps)
-            {
+            foreach (var s in steps) {
                 var stepAttachmentEntries = new List<object>();
-                if (s.Attachments is not null)
-                {
+                if (s.Attachments is not null) {
                     var attachmentIndex = 0;
-                    foreach (var a in s.Attachments)
-                    {
+                    foreach (var a in s.Attachments) {
                         if (string.IsNullOrWhiteSpace(a.Source) || !File.Exists(a.Source)) continue;
-                        try
-                        {
+                        try {
                             var info = new FileInfo(a.Source);
                             if (info.Length == 0) continue;
                             var destName = $"{uuid}-step{stepEntries.Count:D3}-{attachmentIndex:D2}-{Path.GetFileName(a.Source)}";
@@ -101,8 +86,7 @@ public static class AllureReportHelper
                     }
                 }
 
-                stepEntries.Add(new
-                {
+                stepEntries.Add(new {
                     name = s.Name,
                     status = s.Status,
                     start = s.Start,
@@ -112,7 +96,6 @@ public static class AllureReportHelper
                     attachments = stepAttachmentEntries.ToArray(),
                 });
             }
-        }
         var stepsArray = stepEntries.ToArray();
 
         var categoriesArray = categories?.Select(c => new { name = c.Name, value = c.Value }).ToArray() ?? Array.Empty<object>();
@@ -122,16 +105,14 @@ public static class AllureReportHelper
         var severity = "normal";
         string? owner = null;
         var links = new List<object>();
-        foreach (var t in tagList)
-        {
+        foreach (var t in tagList) {
             var lt = t.ToLowerInvariant();
             if (lt is "blocker" or "critical" or "normal" or "minor" or "trivial") severity = lt;
             if (t.StartsWith("owner:", StringComparison.OrdinalIgnoreCase)) owner = t[6..];
             else if (t.StartsWith("issue:", StringComparison.OrdinalIgnoreCase)) links.Add(new { name = t, type = "issue", url = (string?)null });
             else if (t.StartsWith("tms:", StringComparison.OrdinalIgnoreCase)) links.Add(new { name = t, type = "tms", url = (string?)null });
         }
-        var labels = new List<object>
-        {
+        var labels = new List<object> {
             new { name = "suite", value = feature },
             new { name = "feature", value = feature },
             new { name = "story", value = scenario },
@@ -140,14 +121,13 @@ public static class AllureReportHelper
             new { name = "package", value = feature },
             new { name = "host", value = Environment.MachineName },
             new { name = "thread", value = Environment.CurrentManagedThreadId.ToString() },
-            new { name = "framework", value = "reqnroll" },
+            new { name = "framework", value = testFramework ?? "reqnroll" },
             new { name = "language", value = "csharp" },
         };
         if (owner is not null) labels.Add(new { name = "owner", value = owner });
 
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        var result = new
-        {
+        var result = new {
             uuid,
             historyId = $"{feature}::{scenario}",
             fullName = $"{feature}: {scenario}",
@@ -177,8 +157,7 @@ public static class AllureReportHelper
     /// Writes environment.properties so the Allure overview shows the full run
     /// context (OS, runtime, machine, browser, environment, run id).
     /// </summary>
-    public static void WriteEnvironment(string resultsDirectory, string? browser = null, string? environment = null)
-    {
+    public static void WriteEnvironment(string resultsDirectory, string? browser = null, string? environment = null) {
         Directory.CreateDirectory(resultsDirectory);
         File.WriteAllLines(Path.Combine(resultsDirectory, "environment.properties"),
         [
@@ -201,21 +180,16 @@ public static class AllureReportHelper
     /// Writes categories.json so Allure classifies test outcomes into meaningful
     /// defect categories on the overview dashboard.
     /// </summary>
-    public static void WriteCategories(string resultsDirectory)
-    {
-        try
-        {
+    public static void WriteCategories(string resultsDirectory) {
+        try {
             Directory.CreateDirectory(resultsDirectory);
-            var categories = new object[]
-            {
-                new
-                {
+            var categories = new object[] {
+                new {
                     name = "Defectos de Producto / Fallos de Validación",
                     matchedStatuses = new[] { "failed" },
                     messageRegex = ".*(expected|assert|should|equal|target|fail).*|.*TargetFailedException.*"
                 },
-                new
-                {
+                new {
                     name = "Errores de Infraestructura / Excepciones",
                     matchedStatuses = new[] { "broken" },
                     traceRegex = ".*Timeout.*|.*Exception.*"
@@ -230,13 +204,10 @@ public static class AllureReportHelper
     /// <summary>
     /// Writes executor.json so the Allure Overview renders the execution environment.
     /// </summary>
-    public static void WriteExecutor(string resultsDirectory, string? projectName = null)
-    {
-        try
-        {
+    public static void WriteExecutor(string resultsDirectory, string? projectName = null) {
+        try {
             Directory.CreateDirectory(resultsDirectory);
-            var executor = new
-            {
+            var executor = new {
                 name = projectName ?? "Enterprise Automation Framework",
                 type = "custom",
                 buildName = $"Run #{Lifecycle.RunContext.RunId}",
@@ -248,8 +219,7 @@ public static class AllureReportHelper
         catch { /* best-effort */ }
     }
 
-    private static string ResolveScenarioAttachmentName(string file)
-    {
+    private static string ResolveScenarioAttachmentName(string file) {
         var fileName = Path.GetFileName(file);
         var ext = Path.GetExtension(file).ToLowerInvariant();
         if (ext is ".webm" or ".mp4") return "Video de Ejecución";
@@ -264,10 +234,8 @@ public static class AllureReportHelper
     /// <c>{results}/history/</c> — the only place Allure reads it from — so
     /// trends and per-test history survive across generations. Best-effort.
     /// </summary>
-    public static void CopyHistory(string resultsDirectory, string reportDirectory = "allure-report")
-    {
-        try
-        {
+    public static void CopyHistory(string resultsDirectory, string reportDirectory = "allure-report") {
+        try {
             var historyDir = Path.Combine(reportDirectory, "history");
             if (!Directory.Exists(historyDir)) return;
             var target = Path.Combine(resultsDirectory, "history");
@@ -281,19 +249,15 @@ public static class AllureReportHelper
     /// <summary>
     /// Rolls one execution's results into the cumulative folder.
     /// </summary>
-    public static int MergeResults(string runDirectory, string cumulativeDirectory)
-    {
+    public static int MergeResults(string runDirectory, string cumulativeDirectory) {
         var merged = 0;
-        try
-        {
+        try {
             if (!Directory.Exists(runDirectory)) return 0;
             Directory.CreateDirectory(cumulativeDirectory);
-            foreach (var file in Directory.GetFiles(runDirectory))
-            {
+            foreach (var file in Directory.GetFiles(runDirectory)) {
                 var name = Path.GetFileName(file);
                 if (name.StartsWith(".", StringComparison.Ordinal)) continue;
-                try
-                {
+                try {
                     File.Copy(file, Path.Combine(cumulativeDirectory, name), overwrite: true);
                     if (name.EndsWith("-result.json", StringComparison.OrdinalIgnoreCase)) merged++;
                 }
@@ -305,8 +269,7 @@ public static class AllureReportHelper
     }
 
     private static string GuessMime(string path) =>
-        Path.GetExtension(path).ToLowerInvariant() switch
-        {
+        Path.GetExtension(path).ToLowerInvariant() switch {
             ".png" => "image/png",
             ".jpg" or ".jpeg" => "image/jpeg",
             ".zip" => "application/zip",
@@ -327,11 +290,9 @@ public static class AllureReportHelper
     /// Generates the static HTML report: <c>allure generate {results} -o {report} --clean</c>.
     /// Waits for the CLI and returns whether it succeeded.
     /// </summary>
-    public static bool GenerateReport(string resultsDirectory, string reportDirectory = "allure-report", string? cliPath = null)
-    {
+    public static bool GenerateReport(string resultsDirectory, string reportDirectory = "allure-report", string? cliPath = null) {
         Console.WriteLine($"[ALLURE] Generating report from {resultsDirectory}...");
-        try
-        {
+        try {
             var psi = BuildStartInfo(ResolveExecutable(cliPath),
                 $"generate \"{resultsDirectory}\" -o \"{reportDirectory}\" --clean");
             psi.UseShellExecute = false;
@@ -342,15 +303,13 @@ public static class AllureReportHelper
             using var process = Process.Start(psi)!;
             var stdout = process.StandardOutput.ReadToEndAsync();
             var stderr = process.StandardError.ReadToEndAsync();
-            if (!process.WaitForExit(TimeSpan.FromMinutes(3)))
-            {
+            if (!process.WaitForExit(TimeSpan.FromMinutes(3))) {
                 try { process.Kill(entireProcessTree: true); } catch { }
                 Console.WriteLine("[ALLURE] 'allure generate' timed out after 3 minutes.");
                 return false;
             }
 
-            if (process.ExitCode != 0 || !File.Exists(Path.Combine(reportDirectory, "index.html")))
-            {
+            if (process.ExitCode != 0 || !File.Exists(Path.Combine(reportDirectory, "index.html"))) {
                 Console.WriteLine($"[ALLURE] 'allure generate' failed (exit code {process.ExitCode}).");
                 Console.WriteLine(stdout.Result);
                 Console.WriteLine(stderr.Result);
@@ -360,8 +319,7 @@ public static class AllureReportHelper
             Console.WriteLine($"[ALLURE] Report generated in {reportDirectory}");
             return true;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             Console.WriteLine($"[ALLURE] Error generating report: {ex.Message}");
             Console.WriteLine("[ALLURE] Make sure Allure CLI (and Java) are installed and in PATH, or set Allure.AllureCliPath.");
             return false;
@@ -374,13 +332,10 @@ public static class AllureReportHelper
     public static void ServeReport(string resultsDirectory, int port = 56789, string? cliPath = null)
         => StartDetached($"serve \"{resultsDirectory}\" --port {port}", port, cliPath);
 
-    private static void StartDetached(string arguments, int port, string? cliPath)
-    {
+    private static void StartDetached(string arguments, int port, string? cliPath) {
         var url = $"http://localhost:{port}";
-        try
-        {
-            if (IsListening(port))
-            {
+        try {
+            if (IsListening(port)) {
                 Console.WriteLine($"[ALLURE] Port {port} already served; opening {url}");
                 Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
                 return;
@@ -393,40 +348,34 @@ public static class AllureReportHelper
             Process.Start(psi);
             Console.WriteLine($"[ALLURE] Report server left running at {url} (close its window to stop it).");
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             Console.WriteLine($"[ALLURE] Error starting report server: {ex.Message}");
             Console.WriteLine("[ALLURE] Make sure Allure CLI (and Java) are installed and in PATH, or set Allure.AllureCliPath.");
         }
     }
 
-    private static string ResolveExecutable(string? cliPath)
-    {
+    private static string ResolveExecutable(string? cliPath) {
         if (!string.IsNullOrWhiteSpace(cliPath) && File.Exists(cliPath)) return Path.GetFullPath(cliPath);
 
         var paths = (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
             .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
         foreach (var dir in paths)
-            foreach (var name in AllureExecutableNames)
-            {
+            foreach (var name in AllureExecutableNames) {
                 var candidate = Path.Combine(dir.Trim('"'), name);
                 if (File.Exists(candidate)) return candidate;
             }
         return "allure";
     }
 
-    private static ProcessStartInfo BuildStartInfo(string executable, string arguments)
-    {
+    private static ProcessStartInfo BuildStartInfo(string executable, string arguments) {
         var ext = Path.GetExtension(executable).ToLowerInvariant();
         return OperatingSystem.IsWindows() && ext is ".cmd" or ".bat"
             ? new ProcessStartInfo("cmd.exe", $"/d /s /c \"\"{executable}\" {arguments}\"")
             : new ProcessStartInfo(executable, arguments);
     }
 
-    private static bool IsListening(int port)
-    {
-        try
-        {
+    private static bool IsListening(int port) {
+        try {
             using var client = new System.Net.Sockets.TcpClient();
             return client.ConnectAsync(System.Net.IPAddress.Loopback, port).Wait(300) && client.Connected;
         }

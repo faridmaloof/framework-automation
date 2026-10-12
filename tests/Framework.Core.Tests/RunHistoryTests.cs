@@ -10,8 +10,7 @@ namespace Framework.Core.Tests;
 /// Focus on the concurrency guarantee (§12): parallel appends must never
 /// interleave/corrupt lines, so every persisted line deserializes cleanly.
 /// </summary>
-public class RunHistoryTests : IDisposable
-{
+public class RunHistoryTests : IDisposable {
     private readonly string _dir;
 
     public RunHistoryTests()

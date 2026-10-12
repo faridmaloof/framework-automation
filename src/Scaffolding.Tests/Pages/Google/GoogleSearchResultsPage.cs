@@ -7,8 +7,7 @@ namespace Scaffolding.Tests.Pages.Google;
 /// Locator catalogue for the Google search results page — pure Screenplay
 /// page object: page identity + targets only, no behaviour.
 /// </summary>
-public sealed class GoogleSearchResultsPage : PageObject
-{
+public sealed class GoogleSearchResultsPage : PageObject {
     /// <summary>Stateless page object, shared by tasks, steps and questions.</summary>
     public static readonly GoogleSearchResultsPage Instance = new();
 

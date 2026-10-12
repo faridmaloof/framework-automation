@@ -34,8 +34,7 @@ namespace Framework.Core.ScreenPlay.Pages;
 /// }
 /// </code>
 /// </summary>
-public abstract class PageObject
-{
+public abstract class PageObject {
     /// <summary>
     /// Human-readable page name (e.g. <c>"Login"</c>). Stamped on every
     /// target declared by this page and used in reports and failures.
@@ -71,8 +70,7 @@ public abstract class PageObject
     /// <c>"domcontentloaded"</c> or <c>"networkidle"</c>.
     /// </param>
     /// <exception cref="FrameworkException">The page does not define a <see cref="Url"/>.</exception>
-    public virtual NavigateToUrl Open(string? waitFor = null)
-    {
+    public virtual NavigateToUrl Open(string? waitFor = null) {
         if (string.IsNullOrWhiteSpace(Url))
             throw new FrameworkException(
                 $"Page '{Name}' does not define a Url; navigate to it with an explicit task instead.");

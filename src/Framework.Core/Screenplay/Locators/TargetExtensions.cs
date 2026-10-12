@@ -7,8 +7,7 @@ namespace Framework.Core.ScreenPlay.Locators;
 /// automation engine (Playwright). The <see cref="ITarget"/> interface
 /// itself stays engine-agnostic so consumers can plug in other engines.
 /// </summary>
-public static class TargetExtensions
-{
+public static class TargetExtensions {
     /// <summary>
     /// Resolves the target against the given Playwright page using the
     /// target's strategy. When the target declares a <see cref="ITarget.Parent"/>
@@ -20,8 +19,7 @@ public static class TargetExtensions
     /// <param name="target">The target to resolve.</param>
     /// <param name="page">The Playwright page.</param>
     /// <returns>A Playwright <see cref="ILocator"/> for the target.</returns>
-    public static ILocator Resolve(this ITarget target, IPage page)
-    {
+    public static ILocator Resolve(this ITarget target, IPage page) {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(page);
 
@@ -57,17 +55,14 @@ public static class TargetExtensions
             placeholder => scope.GetByPlaceholder(placeholder),
             raw => scope.Locator(raw));
 
-    private static ILocator ApplyStrategy(
-        ITarget target,
-        Func<string, ILocator> byText,
-        Func<string, ILocator> byTestId,
-        Func<string, ILocator> byLabel,
-        Func<string, ILocator> byPlaceholder,
-        Func<string, ILocator> byRaw)
-    {
+    private static ILocator ApplyStrategy(ITarget target,
+                                          Func<string, ILocator> byText,
+                                          Func<string, ILocator> byTestId,
+                                          Func<string, ILocator> byLabel,
+                                          Func<string, ILocator> byPlaceholder,
+                                          Func<string, ILocator> byRaw) {
         var strategy = (target.Strategy ?? "css").Trim().ToLowerInvariant();
-        return strategy switch
-        {
+        return strategy switch {
             "text"        => byText(target.Selector),
             "test-id"     => byTestId(target.Selector),
             "label"       => byLabel(target.Selector),

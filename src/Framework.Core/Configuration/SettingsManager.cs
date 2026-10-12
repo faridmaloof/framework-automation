@@ -9,8 +9,7 @@ namespace Framework.Core.Configuration;
 /// Environment resolution order: FRAMEWORK_ENVIRONMENT → DOTNET_ENVIRONMENT →
 /// ASPNETCORE_ENVIRONMENT → "Development".
 /// </summary>
-public static class SettingsManager
-{
+public static class SettingsManager {
     private static IConfigurationRoot? _configuration;
     private static FrameworkSettings? _frameworkSettings;
     private static DeviceSettings? _deviceSettings;
@@ -42,6 +41,10 @@ public static class SettingsManager
             .SetBasePath(basePath)
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
             .AddJsonFile($"appsettings.{ResolveEnvironment()}.json", optional: true, reloadOnChange: false)
+            .AddJsonFile("appsettings.Secrets.json", optional: true, reloadOnChange: false)
+            .AddJsonFile("secrets.json", optional: true, reloadOnChange: false)
+            .AddEnvironmentVariables()
+            .AddEnvironmentVariables(prefix: "SECRET_")
             .AddEnvironmentVariables(prefix: "FRAMEWORK_")
             .Build();
 
@@ -92,6 +95,16 @@ public static class SettingsManager
             return _apiSettings;
         }
     }
+
+    /// <summary>
+    /// Binds any custom configuration section to a strongly-typed model.
+    /// Allows test suites to define domain-specific settings without touching Core.
+    /// </summary>
+    /// <typeparam name="T">Settings model type.</typeparam>
+    /// <param name="sectionName">Section name in configuration.</param>
+    /// <returns>The bound settings instance.</returns>
+    public static T GetSection<T>(string sectionName) where T : class, new()
+        => Configuration.GetSection(sectionName).Get<T>() ?? new T();
 
     /// <summary>
     /// Loads configuration from the specified path and resets cached settings.

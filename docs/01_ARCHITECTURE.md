@@ -123,8 +123,7 @@ Tasks ScreenPlay, que consumen esos targets:
 
 ```csharp
 // PageObject: SOLO locators, con nombre humano (nunca selectores sueltos)
-public sealed class LoginPage : PageObject
-{
+public sealed class LoginPage : PageObject {
     public static readonly LoginPage Instance = new();
     public override string Name => "Login";
     public override string Url => "https://app.example.com/login";
@@ -137,8 +136,7 @@ public sealed class LoginPage : PageObject
 }
 
 // Component: bloque UI reutilizable con scope propio (modal, header, tabla)
-public sealed class ConfirmationModal : Component
-{
+public sealed class ConfirmationModal : Component {
     public static readonly ConfirmationModal Instance =
         new(Target.Css("modal de confirmación", "[data-testid='confirm-modal']"));
 
@@ -176,8 +174,7 @@ Configuración tipada:
 
 ```csharp
 // AllureSettings.cs
-public class AllureSettings
-{
+public class AllureSettings {
     public string ResultsDirectory { get; set; } = "allure-results";
     public string ProjectName { get; set; } = "Enterprise Automation Framework";
     public bool AutoOpenReport { get; set; } = false;  // No abrir automáticamente
@@ -285,8 +282,7 @@ reemplaza por un único tipo base: `PageObject`. Reglas:
 
 ```csharp
 // 1. PageObject: locators agrupados por página (nombre humano siempre)
-public sealed class LoginPage : PageObject
-{
+public sealed class LoginPage : PageObject {
     public static readonly LoginPage Instance = new();
     public override string Name => "Login";
     public override string Url => "https://app.example.com/login";
@@ -297,8 +293,7 @@ public sealed class LoginPage : PageObject
 }
 
 // 2. Task de negocio agrupado por página (en Pages/Login/LoginTasks.cs)
-public sealed class SignIn : ScreenTask
-{
+public sealed class SignIn : ScreenTask {
     private readonly string _user;
     private readonly string _password;
 
@@ -326,8 +321,7 @@ páginas, se modela una sola vez como `Component` con su propio root; los
 targets hijos se resuelven con scope y cada página estampa su nombre:
 
 ```csharp
-public sealed class SearchBox : Component
-{
+public sealed class SearchBox : Component {
     public static readonly SearchBox Instance =
         new(Target.Css("cuadro de búsqueda", "form[action='/search']"));
 
@@ -365,8 +359,7 @@ entregan Tasks/Ensure*. Cero selectores, cero lógica de validación:
 
 ```csharp
 [Binding]
-public class GoogleSearchSteps(ScenarioContext scenarioContext)
-{
+public class GoogleSearchSteps(ScenarioContext scenarioContext) {
     private readonly ScenarioContext _scenarioContext = scenarioContext;
 
     private IActor Actor => ScenarioActor.Get(_scenarioContext);
@@ -395,8 +388,7 @@ assembly en `reqnroll.json` (`bindingAssemblies`).
 ```csharp
 // Framework.Core/Lifecycle/WebLifecycleHooks.cs  (framework, no el scaffolding)
 [Binding]
-public sealed class WebLifecycleHooks
-{
+public sealed class WebLifecycleHooks {
     [BeforeTestRun]
     public static void BeforeTestRun() { /* carga config, browser lazy compartido */ }
 
@@ -538,8 +530,7 @@ retenidos.
 | `environment.properties` | Del nuevo run más reciente; choca con el más antiguo. |
 
 ```csharp
-// appsettings.json — configuración por defecto
-{
+// appsettings.json — configuración por defecto {
   "Framework": {
     "Reporting": {
       "AllureHistory": "Cumulative",

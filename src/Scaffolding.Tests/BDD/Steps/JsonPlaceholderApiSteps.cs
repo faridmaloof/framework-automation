@@ -14,8 +14,7 @@ namespace Scaffolding.Tests.BDD.Steps;
 /// no inline assertions, no raw selectors — full ScreenPlay composition.
 /// </summary>
 [Binding]
-public sealed class JsonPlaceholderApiSteps
-{
+public sealed class JsonPlaceholderApiSteps {
     private const string ApiBaseUrl = "https://jsonplaceholder.typicode.com";
     private readonly ScenarioContext _scenarioContext;
 

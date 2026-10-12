@@ -26,8 +26,7 @@ public sealed record ScenarioRunEntry(
 /// Append-only run history (JSON lines). Zero-dependency, fast, and easy to
 /// feed into dashboards or simple scripts to see how the suite behaves over time.
 /// </summary>
-public static class RunHistory
-{
+public static class RunHistory {
     /// <summary>Default history file name (used by <see cref="Configuration.HistoryMode.Shared"/>).</summary>
     public const string DefaultFileName = "runs.jsonl";
 

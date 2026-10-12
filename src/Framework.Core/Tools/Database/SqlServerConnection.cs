@@ -7,8 +7,7 @@ namespace Framework.Core.Tools.Database;
 /// Initializes a new instance of the <see cref="SqlServerConnection"/> class.
 /// </remarks>
 /// <param name="connectionString">The SQL Server connection string.</param>
-public class SqlServerConnection(string connectionString) : DatabaseConnection(connectionString)
-{
+public class SqlServerConnection(string connectionString) : DatabaseConnection(connectionString) {
 
 
     /// <inheritdoc/>

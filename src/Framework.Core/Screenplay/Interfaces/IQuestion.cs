@@ -3,8 +3,7 @@ namespace Framework.Core.ScreenPlay.Interfaces;
 /// <summary>
 /// Represents a question about the system state that returns a result.
 /// </summary>
-public interface IQuestion<TResult>
-{
+public interface IQuestion<TResult> {
     /// <summary>
     /// Gets the description of this question (for reporting).
     /// </summary>

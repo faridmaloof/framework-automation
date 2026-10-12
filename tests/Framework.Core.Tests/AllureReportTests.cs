@@ -11,8 +11,7 @@ namespace Framework.Core.Tests;
 /// valid Allure-2 JSON, environment.properties must exist, and relative paths
 /// must resolve from the repo root (never bin/Debug).
 /// </summary>
-public class AllureReportTests : IDisposable
-{
+public class AllureReportTests : IDisposable {
     private readonly string _dir;
 
     public AllureReportTests()

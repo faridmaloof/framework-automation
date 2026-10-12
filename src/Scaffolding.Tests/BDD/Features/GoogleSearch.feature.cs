@@ -11,8 +11,7 @@
 #region Designer generated code
 #pragma warning disable
 using Reqnroll;
-namespace Scaffolding.Tests.BDD.Features
-{
+namespace Scaffolding.Tests.BDD.Features {
     
     
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Reqnroll", "3.0.0.0")]

@@ -23,8 +23,7 @@ namespace Framework.Core.Lifecycle;
 /// <remarks>Initializes a new instance of the <see cref="WebLifecycleHooks"/> class.</remarks>
 /// <param name="scenarioContext">The Reqnroll scenario context.</param>
 [Binding]
-public sealed class WebLifecycleHooks(ScenarioContext scenarioContext)
-{
+public sealed class WebLifecycleHooks(ScenarioContext scenarioContext) {
     /// <summary>
     /// The scenario's isolated browser context (session). It is stored in the scenario context for easy access by steps and tasks.
     /// </summary>
@@ -57,13 +56,15 @@ public sealed class WebLifecycleHooks(ScenarioContext scenarioContext)
 
         var browser = await BrowserSessionManager.Shared.GetBrowserAsync();
         var evidenceDir = ReportService.ResolveEvidenceDirectory(SettingsManager.AllureSettings, fw.Evidence);
-        _context = await browser.NewContextAsync(new BrowserNewContextOptions {
+        var contextOptions = new BrowserNewContextOptions {
             ViewportSize = new ViewportSize { Width = device.ViewportWidth, Height = device.ViewportHeight },
             UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
             RecordVideoDir = fw.Evidence.Video == VideoMode.Disabled
                 ? null
                 : Path.Combine(evidenceDir, "videos"),
-        });
+        };
+        BrowserOptionsHook.ConfigureContext?.Invoke(contextOptions);
+        _context = await browser.NewContextAsync(contextOptions);
         await _context.AddInitScriptAsync("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});");
         _context.SetDefaultTimeout(fw.Timeouts.ActionTimeoutSeconds * 1000f);
         _context.SetDefaultNavigationTimeout(fw.Timeouts.NavigationTimeoutSeconds * 1000f);
@@ -72,6 +73,8 @@ public sealed class WebLifecycleHooks(ScenarioContext scenarioContext)
             await _context.Tracing.StartAsync(new TracingStartOptions { Screenshots = true, Snapshots = true });
 
         _page = await _context.NewPageAsync();
+        if (BrowserOptionsHook.OnPageCreatedAsync != null)
+            await BrowserOptionsHook.OnPageCreatedAsync(_page);
         scenarioContext["Page"] = _page;
         scenarioContext["ScenarioStartTime"] = DateTimeOffset.UtcNow;
         scenarioContext["StepIndex"] = 0;
@@ -164,7 +167,8 @@ public sealed class WebLifecycleHooks(ScenarioContext scenarioContext)
         }
 
         // Close the isolated contexts of any secondary personas first, then the
-        // scenario's primary context. Closing an already-closed context is safe.
+        // scenario's primary context. Closing an already-closed context is safe
+        // and flushes all recorded video files.
         foreach (var secondary in _secondaryContexts)
             try { await secondary.CloseAsync(); } catch { /* already closed */ }
         _secondaryContexts.Clear();
@@ -172,8 +176,35 @@ public sealed class WebLifecycleHooks(ScenarioContext scenarioContext)
         try { if (_context != null) await _context.CloseAsync(); }
         catch { /* already closed by an ability */ }
 
-        scenarioContext["VideoPaths"] = _videoPaths;
-        if (_videoPaths.Count > 0) scenarioContext["VideoPath"] = _videoPaths[0];
+        // Finalize videos according to VideoMode:
+        // OnFailure: keep and attach ONLY if the scenario failed; if it passed, discard video from disk.
+        // Always: keep and attach regardless of outcome.
+        // Disabled: discard any recorded video.
+        if (fw.Evidence.Video == VideoMode.OnFailure)
+        {
+            if (failed)
+            {
+                scenarioContext["VideoPaths"] = _videoPaths;
+                if (_videoPaths.Count > 0) scenarioContext["VideoPath"] = _videoPaths[0];
+            }
+            else
+            {
+                foreach (var video in _videoPaths)
+                    try { if (File.Exists(video)) File.Delete(video); } catch { }
+                _videoPaths.Clear();
+            }
+        }
+        else if (fw.Evidence.Video == VideoMode.Always)
+        {
+            scenarioContext["VideoPaths"] = _videoPaths;
+            if (_videoPaths.Count > 0) scenarioContext["VideoPath"] = _videoPaths[0];
+        }
+        else
+        {
+            foreach (var video in _videoPaths)
+                try { if (File.Exists(video)) File.Delete(video); } catch { }
+            _videoPaths.Clear();
+        }
     }
 
     private bool IsWeb() =>
@@ -193,8 +224,7 @@ public sealed class WebLifecycleHooks(ScenarioContext scenarioContext)
 /// easier for the lifecycle hooks to access per-step metadata and the
 /// scenario's evidence root.
 /// </summary>
-public static class ScenarioContextExtensions
-{
+public static class ScenarioContextExtensions {
     /// <summary>
     /// The zero-based step index of the currently executing step, as tracked
     /// by <see cref="Framework.Core.Lifecycle.RunHistoryHooks"/>. Falls back

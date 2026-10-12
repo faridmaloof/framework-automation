@@ -10,8 +10,7 @@ namespace Framework.Core.ScreenPlay;
 /// Initializes a new instance of the <see cref="ActorBuilder"/> class.
 /// </remarks>
 /// <param name="name">The actor's name (e.g., "John", "Admin", "Customer").</param>
-public class ActorBuilder(string name)
-{
+public class ActorBuilder(string name) {
     private readonly string _name = name;
     private readonly List<IAbility> _abilities = [];
 
@@ -22,8 +21,7 @@ public class ActorBuilder(string name)
     /// <typeparam name="TAbility">The type of ability.</typeparam>
     /// <param name="ability">The ability instance.</param>
     /// <returns>The builder for chaining.</returns>
-    public ActorBuilder WithAbility<TAbility>(TAbility ability) where TAbility : IAbility
-    {
+    public ActorBuilder WithAbility<TAbility>(TAbility ability) where TAbility : IAbility {
         _abilities.Add(ability);
         return this;
     }
@@ -32,8 +30,7 @@ public class ActorBuilder(string name)
     /// Builds the actor with all registered abilities.
     /// </summary>
     /// <returns>The configured actor.</returns>
-    public Actor Build()
-    {
+    public Actor Build() {
         var actor = new Actor(_name);
         foreach (var ability in _abilities) actor.WhoCan(ability);
         return actor;

@@ -9,8 +9,7 @@ namespace Scaffolding.Tests.Pages.Google;
 /// pages without duplicating locators. Page classes stamp their own page name
 /// on the targets they expose (see <see cref="GoogleHomePage"/>).
 /// </summary>
-public sealed class SearchBox : Component
-{
+public sealed class SearchBox : Component {
     /// <summary>Shared component instance (stateless).</summary>
     public static readonly SearchBox Instance = new();
 

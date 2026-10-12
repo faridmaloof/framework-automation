@@ -51,8 +51,7 @@ using Framework.Core.ScreenPlay.Pages;
 namespace Scaffolding.Tests.Pages.MyApp;
 
 /// <summary>Catálogo de locators de la página de Login (sin comportamiento).</summary>
-public sealed class LoginPage : PageObject
-{
+public sealed class LoginPage : PageObject {
     public static readonly LoginPage Instance = new();
     private LoginPage() { }
 
@@ -70,8 +69,7 @@ public sealed class LoginPage : PageObject
 ### 3.2 Bloque reutilizable en varias páginas → Component
 
 ```csharp
-public sealed class SiteHeader : Component
-{
+public sealed class SiteHeader : Component {
     public static readonly SiteHeader Instance =
         new(Target.Css("cabecera", "header[role='banner']"));
 
@@ -85,8 +83,7 @@ public Target HeaderLogout => SiteHeader.Instance.LogoutLink with { Page = Name 
 ### 3.3 Flujo de negocio → Task agrupado por página
 
 ```csharp
-public sealed class SignIn : ScreenTask
-{
+public sealed class SignIn : ScreenTask {
     private readonly string _user;
     private readonly string _password;
 
@@ -106,8 +103,7 @@ public sealed class SignIn : ScreenTask
 
 ```csharp
 // Question pura (sin aserciones)...
-public sealed class WelcomeMessage : ScreenQuestion<string>
-{
+public sealed class WelcomeMessage : ScreenQuestion<string> {
     public override string Description => "mensaje de bienvenida";
     public static WelcomeMessage Value() => new();
 
@@ -116,8 +112,7 @@ public sealed class WelcomeMessage : ScreenQuestion<string>
 }
 
 // ... + Ensure* que la compone con la asertación
-public sealed class EnsureWelcomeMessage : ScreenTask
-{
+public sealed class EnsureWelcomeMessage : ScreenTask {
     private readonly string _expected;
     public EnsureWelcomeMessage(string expected) => _expected = expected;
 
@@ -135,8 +130,7 @@ public sealed class EnsureWelcomeMessage : ScreenTask
 
 ```csharp
 [Binding]
-public class LoginSteps(ScenarioContext scenarioContext)
-{
+public class LoginSteps(ScenarioContext scenarioContext) {
     private readonly ScenarioContext _scenarioContext = scenarioContext;
     private IActor Actor => ScenarioActor.Get(_scenarioContext);
 

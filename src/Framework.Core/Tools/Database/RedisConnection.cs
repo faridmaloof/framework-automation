@@ -5,8 +5,7 @@ namespace Framework.Core.Tools.Database;
 /// <summary>
 /// Redis NoSQL database connection.
 /// </summary>
-public class RedisConnection : IDisposable
-{
+public class RedisConnection : IDisposable {
     private readonly IDatabase _database;
     private readonly ConnectionMultiplexer _connection;
     private bool _disposed;

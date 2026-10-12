@@ -16,8 +16,7 @@ namespace Framework.Core.BDD;
 /// with <see cref="SetExtractor"/> without touching the framework.
 /// </para>
 /// </summary>
-public static partial class ActorSubjects
-{
+public static partial class ActorSubjects {
     // Canonical subject/alias → canonical persona. Concurrent so per-step reads
     // never take a global lock (§5.6). Seeded with base pronouns AND base roles
     // (§5.1: the core provides useful initial aliases; roles are subjects, not

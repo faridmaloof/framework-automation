@@ -12,8 +12,7 @@ namespace Framework.Core.ScreenPlay.Web.Questions;
 // =====================================================================
 
 /// <summary>Gets the current browser URL.</summary>
-public sealed class CurrentUrl : ScreenQuestion<string>
-{
+public sealed class CurrentUrl : ScreenQuestion<string> {
     /// <inheritdoc/>
     public override string Description => "current URL";
 
@@ -26,8 +25,7 @@ public sealed class CurrentUrl : ScreenQuestion<string>
 }
 
 /// <summary>Gets the current page title.</summary>
-public sealed class CurrentTitle : ScreenQuestion<string>
-{
+public sealed class CurrentTitle : ScreenQuestion<string> {
     /// <inheritdoc/>
     public override string Description => "current title";
 
@@ -42,8 +40,7 @@ public sealed class CurrentTitle : ScreenQuestion<string>
 /// <summary>
 /// Reads the visibility of an element (true when visible / present).
 /// </summary>
-public sealed class IsVisible : ScreenQuestion<bool>
-{
+public sealed class IsVisible : ScreenQuestion<bool> {
     private readonly ITarget _target;
 
     /// <summary>
@@ -65,8 +62,7 @@ public sealed class IsVisible : ScreenQuestion<bool>
 }
 
 /// <summary>Counts elements that match the target.</summary>
-public sealed class Count : ScreenQuestion<int>
-{
+public sealed class Count : ScreenQuestion<int> {
     private readonly ITarget _target;
 
     /// <summary>
@@ -88,8 +84,7 @@ public sealed class Count : ScreenQuestion<int>
 }
 
 /// <summary>Reads the inner text (trimmed) of an element.</summary>
-public sealed class TextOf : ScreenQuestion<string>
-{
+public sealed class TextOf : ScreenQuestion<string> {
     private readonly ITarget _target;
 
     /// <summary>
@@ -105,8 +100,7 @@ public sealed class TextOf : ScreenQuestion<string>
     public static TextOf On(ITarget target) => new(target);
 
     /// <inheritdoc/>
-    public override async Task<string> AnsweredByAsync(IActor actor)
-    {
+    public override async Task<string> AnsweredByAsync(IActor actor) {
         var text = await TargetGuard.AnswerAsync(actor, _target, "read the text from",
             locator => locator.InnerTextAsync());
         return text.Trim();
@@ -114,8 +108,7 @@ public sealed class TextOf : ScreenQuestion<string>
 }
 
 /// <summary>Predicate-style question: URL contains the expected substring.</summary>
-public sealed class UrlContains : ScreenQuestion<bool>
-{
+public sealed class UrlContains : ScreenQuestion<bool> {
     private readonly string _expected;
 
     /// <summary>
@@ -136,8 +129,7 @@ public sealed class UrlContains : ScreenQuestion<bool>
 }
 
 /// <summary>Predicate-style question: URL exactly matches the expected value.</summary>
-public sealed class UrlEquals : ScreenQuestion<bool>
-{
+public sealed class UrlEquals : ScreenQuestion<bool> {
     private readonly string _expected;
 
     /// <summary>

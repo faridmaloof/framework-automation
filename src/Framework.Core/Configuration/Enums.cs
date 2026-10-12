@@ -3,8 +3,7 @@ namespace Framework.Core.Configuration;
 /// <summary>
 /// How run history is stored on disk.
 /// </summary>
-public enum HistoryMode
-{
+public enum HistoryMode {
     /// <summary>
     /// Append every execution to the SAME history file (default). Best for
     /// trend/flaky analysis across runs.
@@ -23,8 +22,7 @@ public enum HistoryMode
 /// executed twice (or 20 tests per run, re-run 30 minutes later) keeps the
 /// previous result visible as history/trend instead of being overwritten.
 /// </summary>
-public enum AllureHistoryMode
-{
+public enum AllureHistoryMode {
     /// <summary>
     /// Overwrite: each execution replaces the previous results (old behaviour).
     /// Only the last run is visible. Default for backwards compatibility.
@@ -45,8 +43,7 @@ public enum AllureHistoryMode
 /// <summary>
 /// When (and whether) the Allure HTML report is produced at the end of a run.
 /// </summary>
-public enum ReportGeneration
-{
+public enum ReportGeneration {
     /// <summary>Do not generate a report.</summary>
     None = 0,
 
@@ -57,8 +54,7 @@ public enum ReportGeneration
 /// <summary>
 /// Browser type enumeration with full support for all major browsers.
 /// </summary>
-public enum BrowserType
-{
+public enum BrowserType {
     /// <summary>
     /// Chromium browser (open-source base for Chrome, Edge, etc.).
     /// </summary>
@@ -113,8 +109,7 @@ public enum BrowserType
 /// <summary>
 /// Screenshot capture mode enumeration.
 /// </summary>
-public enum ScreenshotMode
-{
+public enum ScreenshotMode {
     /// <summary>
     /// No screenshots.
     /// </summary>
@@ -149,8 +144,7 @@ public enum ScreenshotMode
 /// <summary>
 /// Video recording mode enumeration.
 /// </summary>
-public enum VideoMode
-{
+public enum VideoMode {
     /// <summary>
     /// No video recording.
     /// </summary>
@@ -170,8 +164,7 @@ public enum VideoMode
 /// <summary>
 /// Observability mode for metrics and tracing.
 /// </summary>
-public enum ObservabilityMode
-{
+public enum ObservabilityMode {
     /// <summary>
     /// Observability disabled.
     /// </summary>

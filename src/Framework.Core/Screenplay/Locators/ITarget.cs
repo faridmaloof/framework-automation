@@ -12,8 +12,7 @@ namespace Framework.Core.ScreenPlay.Locators;
 /// Interactions, Tasks and Questions. Reports and failures always reference
 /// <see cref="Name"/> + <see cref="Location"/> — never the raw selector.
 /// </summary>
-public interface ITarget
-{
+public interface ITarget {
     /// <summary>
     /// Human-readable name used in reports, traces and error messages
     /// (e.g. <c>"Usuario"</c>, <c>"Botón ingresar"</c>).

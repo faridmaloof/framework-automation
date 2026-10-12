@@ -3,8 +3,7 @@ namespace Framework.Core.Configuration;
 /// <summary>
 /// Observability settings for metrics, tracing, and dashboards.
 /// </summary>
-public class ObservabilitySettings
-{
+public class ObservabilitySettings {
     /// <summary>
     /// Gets or sets the observability mode.
     /// Default: Console (development mode)

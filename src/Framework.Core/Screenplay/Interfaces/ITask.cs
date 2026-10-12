@@ -4,8 +4,7 @@ namespace Framework.Core.ScreenPlay.Interfaces;
 /// Represents a business-level task that an actor can perform.
 /// Tasks are composed of one or more interactions.
 /// </summary>
-public interface ITask : IAction
-{
+public interface ITask : IAction {
     /// <summary>
     /// Gets the business name of this task (for reporting).
     /// </summary>

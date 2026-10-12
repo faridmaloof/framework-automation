@@ -10,8 +10,7 @@ namespace Framework.Core.ScreenPlay;
 /// Initializes a new instance of the <see cref="BrowseTheWeb"/> class.
 /// </remarks>
 /// <param name="page">The Playwright page.</param>
-public class BrowseTheWeb(IPage page) : DisposableAbility
-{
+public class BrowseTheWeb(IPage page) : DisposableAbility {
     private bool _disposed;
 
 
@@ -31,21 +30,16 @@ public class BrowseTheWeb(IPage page) : DisposableAbility
     public static BrowseTheWeb With(IPage page) => new(page);
 
     /// <inheritdoc/>
-    public override async ValueTask DisposeAsync()
-    {
+    public override async ValueTask DisposeAsync() {
         if (_disposed) return;
 
         _disposed = true;
 
-        try
-        {
+        try {
             if (Page.Context != null)
-            {
                 await Page.Context.CloseAsync();
-            }
         }
-        catch
-        {
+        catch {
             // Ignore disposal errors
         }
     }

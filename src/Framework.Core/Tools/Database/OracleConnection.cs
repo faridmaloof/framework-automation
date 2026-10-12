@@ -7,8 +7,7 @@ namespace Framework.Core.Tools.Database;
 /// Initializes a new instance of the <see cref="OracleConnection"/> class.
 /// </remarks>
 /// <param name="connectionString">The Oracle connection string.</param>
-public class OracleConnection(string connectionString) : DatabaseConnection(connectionString)
-{
+public class OracleConnection(string connectionString) : DatabaseConnection(connectionString) {
 
 
     /// <inheritdoc/>

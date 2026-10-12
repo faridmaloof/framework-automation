@@ -6,8 +6,7 @@ namespace Framework.Core.ScreenPlay;
 /// Base class for abilities that require disposal.
 /// Use this for abilities that manage resources (e.g., browser connections).
 /// </summary>
-public abstract class DisposableAbility : IAbility, IAsyncDisposable
-{
+public abstract class DisposableAbility : IAbility, IAsyncDisposable {
     /// <inheritdoc/>
     public abstract string DisplayName { get; }
     

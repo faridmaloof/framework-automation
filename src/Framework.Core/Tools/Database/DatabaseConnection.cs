@@ -11,8 +11,7 @@ namespace Framework.Core.Tools.Database;
 /// Initializes a new instance of the <see cref="DatabaseConnection"/> class.
 /// </remarks>
 /// <param name="connectionString">The database connection string.</param>
-public abstract class DatabaseConnection(string connectionString) : IDisposable
-{
+public abstract class DatabaseConnection(string connectionString) : IDisposable {
     /// <summary>
     /// Gets the connection string.
     /// </summary>

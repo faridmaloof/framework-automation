@@ -88,6 +88,8 @@ traces/
 appsettings.*.local.json
 appsettings.Local.json
 *.local.json
+appsettings.Secrets.json
+appsettings.*.Secrets.json
 secrets.json
 *.pfx
 *.p12

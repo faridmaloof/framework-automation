@@ -141,8 +141,7 @@ using Framework.Core.ScreenPlay.Pages;
 
 namespace Scaffolding.Tests.Pages.MyApp;
 
-public sealed class LoginPage : PageObject
-{
+public sealed class LoginPage : PageObject {
     public static readonly LoginPage Instance = new();
 
     public override string Name => "Login";
@@ -168,8 +167,7 @@ using Framework.Core.ScreenPlay.Web.Interactions;
 
 namespace Scaffolding.Tests.Pages.MyApp;
 
-public sealed class SignIn : ScreenTask
-{
+public sealed class SignIn : ScreenTask {
     private readonly string _user;
     private readonly string _password;
 
@@ -198,8 +196,7 @@ using Scaffolding.Tests.Pages.MyApp;
 namespace Scaffolding.Tests.BDD.Steps;
 
 [Binding]
-public class MyFeatureSteps(ScenarioContext scenarioContext)
-{
+public class MyFeatureSteps(ScenarioContext scenarioContext) {
     private readonly ScenarioContext _scenarioContext = scenarioContext;
 
     private IActor Actor => ScenarioActor.Get(_scenarioContext);
@@ -399,8 +396,7 @@ Pages/
 3. Usar en tus tests
 
 ```csharp
-public class MyDbConnection : DatabaseConnection
-{
+public class MyDbConnection : DatabaseConnection {
     protected override IDbConnection CreateConnection()
     {
         return new MyDbConnection(ConnectionString);
